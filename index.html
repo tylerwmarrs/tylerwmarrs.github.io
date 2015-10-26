@@ -47,36 +47,36 @@
 <div class="content-wrapper">
     <div class="content">
         <a name="about"><h2 class="content-head is-center">About</h2></a>
-        <p>Tyler Marrs started his software career at the young age of 12 years old. As he became aware of software development as a career, he obtained a Bachelor’s of Science degree from Missouri Western State University in Computer Information Systems (2011). Furthermore, he obtained a Master’s of Science degree in Software Engineering from the University of Maryland University College (2015). Initially Tyler was unable to find a business domain that interested him. He worked within several industries; philanthropy, advertising and logistics to name a few. Finally, he found a passion for bioinformatics by accident. His future wife always had an interest in the field which led him to applying for a job posting within the field to see if he could get anywhere and he did. The technical challenges within the field are never ending and knowing that this work can benefit people within the medical field is very rewarding to him. Tyler currently works for Children’s Mercy Hospital within the genome center where he creates software tools that allow analysts to analyze next-generation sequence data. Essentially, the analysts look for genetic diseases within children to make a diagnosis. As his interest in bioinformatics became deeper and deeper, Tyler decided that he must pursue a PhD in this field.</p>
+        <p>Tyler Marrs started his software career at the young age of 12 years old. As he became aware of software development as a career, he obtained a Bachelor’s of Science degree from Missouri Western State University in Computer Information Systems (2011). Furthermore, he obtained a Master’s of Science degree in Software Engineering from the University of Maryland University College (2015). Initially Tyler was unable to find a business domain that interested him. He worked within several industries; philanthropy, advertising and logistics to name a few. Finally, he found a passion for bioinformatics by accident. His <span id="wife-status">future wife</span> always had an interest in the field which led him to applying for a job posting within the field to see if he could get anywhere and he did. The technical challenges within the field are never ending and knowing that this work can benefit people within the medical field is very rewarding to him. Tyler currently works for Children’s Mercy Hospital within the genome center where he creates software tools that allow analysts to analyze next-generation sequence data. Essentially, the analysts look for genetic diseases within children to make a diagnosis. As his interest in bioinformatics became deeper and deeper, Tyler decided that he must pursue a PhD in this field.</p>
     </div>
 
     <div class="content ribbon">
             <a name="projects"><h2 class="content-head content-head-ribbon is-center">Projects</h2></a>
             <div class="pure-g">
-                <div class="pure-u-1-3">
+                <div class="pure-u-1 pure-u-md-1-3">
                   <h3 class="ribbon">Student System</h3>
                   <p>This system integrated multiple subsystems to provide an admistrative dashboard for monitoring a student's academic progress. It also provided a student dashboard for transcripts, enrollment, surveys and degree management.</p>
                 </div>
-                <div class="pure-u-1-3">
+                <div class="pure-u-1 pure-u-md-1-3">
                   <h3 class="ribbon">Philanthropic System</h3>
                   <p>Worked on a system that allows other organizations to manage donations and enabled anonymous users to donate to any given organization within the system.</p>
                 </div>
-                <div class="pure-u-1-3">
+                <div class="pure-u-1 pure-u-md-1-3">
                   <h3 class="ribbon">Document System</h3>
                   <p>Created a document management system for Dell Inc., which allowed various teams to collaborate. Various third party systems were integrated to make the system seamless.</p>
                 </div>
             </div>
 
             <div class="pure-g">
-                <div class="pure-u-1-3">
+                <div class="pure-u-1 pure-u-md-1-3">
                   <h3 class="ribbon">Trucking Logistics System</h3>
                   <p>This system integrated GPS tracking to monitor the delivery of loads to various locations across the United States. It integrated a phone system for logging, real-time geo-location analysis and a "perfect route" matching algorithm.</p>
                 </div>
-                <div class="pure-u-1-3">
+                <div class="pure-u-1 pure-u-md-1-3">
                   <h3 class="ribbon">Content Systems</h3>
                   <p>A multitude of content managmenet systems were custom developed for companies such as Whole Foods, Western Union and some smaller companies. These systems were aimed at user friendliness and little to no developer maintenance after they were set up.</p>
                 </div>
-                <div class="pure-u-1-3">
+                <div class="pure-u-1 pure-u-md-1-3">
                   <h3 class="ribbon">Variant Analysis</h3>
                   <p>This system integrates many other subsystems to enable individuals to analyze next-generation sequencing data by filtering massive amounts of information in real time (millions of records). Specifically, the tool provided phenotype to genotype association, pedigree analysis and clinical reporting.</p>
                 </div>
@@ -111,6 +111,13 @@
   // simply set the copyright year
   window.onload = function() {
     document.getElementById("copy-year").innerHTML = new Date().getFullYear();
+
+    // alter "future wife" wording
+    var weddingDate = new Date("2015-11-12");
+    var today = new Date();
+    if (today >= weddingDate) {
+      document.getElementById("wife-staus").innerHTML = "wife";
+    }
   }
 </script>
 </body>
