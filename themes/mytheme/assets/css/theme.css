@@ -2,6 +2,15 @@ html {
 	height: 100%;
 }
 
+/* Override nikola_ipython.css */
+div.prompt {
+  background-color: #FFFFFF;
+}
+
+div.input {
+  border: none;
+}
+
 .navbar .navbar-nav {
     display: inline-block;
     float: none;

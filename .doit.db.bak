@@ -145,7 +145,7 @@
 'render_posts:cache/posts/quick-stats-descriptive-statistics-part-1-mean.html', (171520, 648)
 'copy_files:output/wp-content/uploads/2017/03/swearword_frequency_plot_twentyone_pilots2-768x528.png', (172544, 385)
 'render_pages:output/pages/projects/index.html', (550912, 3250)
-'sitemap:output/sitemap.xml', (614400, 18898)
+'sitemap:output/sitemap.xml', (614400, 18911)
 'copy_files:output/wp-content/uploads/2017/03/song_statistics_plot_twentyone_pilots-300x206.png', (194048, 375)
 'copy_assets:output/assets/xml/rss.xsl', (194560, 395)
 'copy_files:output/wp-content/uploads/2017/02/common_trigrams-150x150.png', (195072, 330)
