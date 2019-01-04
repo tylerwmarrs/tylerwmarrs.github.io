@@ -624,11 +624,11 @@ REDIRECTIONS = []
 # to `nikola deploy`.  If no arguments are specified, a preset
 # named `default` will be executed.  You can use as many presets
 # in a `nikola deploy` command as you like.
-# DEPLOY_COMMANDS = {
-#     'default': [
-#         "rsync -rav --delete output/ joe@my.site:/srv/www/site",
-#     ]
-# }
+DEPLOY_COMMANDS = {
+    'default': [
+        "rsync -rav -e ssh --delete output/ tyler@tylermarrs.com:/home/tyler/www/tylermarrs.com/www",
+    ]
+}
 
 # github_deploy configuration
 # For more details, read the manual:
