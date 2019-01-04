@@ -1,0 +1,7 @@
+[Theme]
+engine = mako
+parent = bootstrap3
+author = Tyler Marrs
+author_url = http://tylermarrs.com
+license = MIT
+tags = bootstrap

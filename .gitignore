@@ -1,0 +1,6 @@
+_site/
+*.pyc
+.DS_Store
+cache/
+output/
+**/.ipynb_checkpoints/
