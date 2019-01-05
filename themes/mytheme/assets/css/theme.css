@@ -16,7 +16,7 @@ article span.byline-name.fn {
 }
 
 div.metadata {
-	padding: 0px;
+	display: none;
 }
 
 .navbar .navbar-nav {
