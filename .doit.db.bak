@@ -444,7 +444,7 @@
 'render_sources:output\\posts\\quick-stats-descriptive-statistics-part-4-application-of-mean-median-and-mode\\index.md', (2092544, 381)
 'copy_files:output\\wp-content\\uploads\\2017\\02\\common_trigrams-150x150.png', (2093056, 341)
 'render_taxonomies:output\\categories\\markov\\index.html', (2093568, 2066)
-'sitemap:output\\sitemap.xml', (3412480, 20917)
+'sitemap:output\\sitemap.xml', (3412480, 20916)
 'copy_files:output\\wp-content\\uploads\\2017\\03\\repetitiveness_plot_twentyone_pilots-150x150.png', (2114048, 381)
 'copy_files:output\\wp-content\\uploads\\2017\\03\\word_frequency_plot_twentyone_pilots-150x150.png', (2114560, 382)
 'render_taxonomies:output\\categories\\data-analytics\\index.html', (2115072, 5100)
@@ -811,3 +811,4 @@
 'render_taxonomies:output\\categories\\algorithms.xml', (3434496, 1096)
 'render_taxonomies:output\\categories\\time-series\\index.html', (3438080, 1885)
 'render_taxonomies:output\\index-7.html', (3446272, 4777)
+'scale_images:output\\images\\me_original.jpg', (3451392, 226)
