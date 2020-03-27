@@ -1,0 +1,1 @@
+<html><body><div align="center"><p>This is a graphic I made to promote the matrix profile. It provides a very quick overview to attract interest.</p><img src="/images/mp_tldr.png" /></div></body></html>
