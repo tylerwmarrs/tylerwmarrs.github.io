@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ranked Win Predictor | Tyler Marrs</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="canonical" href="http://tylermarrs.com/posts/ranked-win-predictor/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-140537127-1"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-140537127-1');
+</script><link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="../../assets/css/theme.css">
+<link rel="stylesheet" media="screen" href="http://openfontlibrary.org/face/railway-sans" type="text/css">
+<link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../../favicon-16x16.png">
+<link rel="manifest" href="../../site.webmanifest">
+<link rel="mask-icon" href="../../safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+<meta name="author" content="Tyler Marrs">
+<link rel="prev" href="../challenger-tier-baron-throw-analysis/" title="Challenger Tier Baron Throw Analysis" type="text/html">
+<link rel="next" href="../convert-23-and-me-raw-data-to-vcf/" title="Convert 23 and Me Raw Data to VCF" type="text/html">
+<meta property="og:site_name" content="Tyler Marrs">
+<meta property="og:title" content="Ranked Win Predictor">
+<meta property="og:url" content="http://tylermarrs.com/posts/ranked-win-predictor/">
+<meta property="og:description" content="Abstract
+
+
+    This analysis documents the techniques involved in predicting which team will win in a ranked League of Legends game. Ranked games consist of two teams of five players that try to win b">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2016-07-03T21:26:22-05:00">
+<meta property="article:tag" content="data analytics">
+<meta property="article:tag" content="data science">
+<meta property="article:tag" content="league of legends">
+<meta property="article:tag" content="predictive modeling">
+</head>
+<body>
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse center" role="navigation"><div class="container">
+    <div align="center">
+      <img id="logo" src="../../images/me.jpg"><div id="blog-title">Tyler Marrs</div>
+      <div id="blog-description">Yet another data scientist's blog.</div>
+    </div>
+
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+    </div>
+    <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+<li>
+<a href="../../pages/about/">About</a>
+                </li>
+<li>
+<a href="../../">Blog</a>
+                </li>
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../pages/projects/">Projects</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+
+        </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<!--Add Links to social media sites --><!-- pass -->
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+</nav><!-- End of Menubar --><div class="container">
+  <!--Body content-->
+  <div class="row">
+      
+      
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Ranked Win Predictor</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Tyler Marrs
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2016-07-03T21:26:22-05:00" itemprop="datePublished" title="2016-07-03">2016-07-03</time></a>
+            </p>
+            
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<p></p>
+<h3>
+    Abstract
+</h3>
+<p>
+    This analysis documents the techniques involved in predicting which team will win in a ranked League of Legends game. Ranked games consist of two teams of five players that try to win by killing the opposing team's nexus. To learn more about League of Legends, <a href="http://leagueoflegends.com" target="_blank">follow this link</a>.
+</p>
+
+<p>
+    Predicting the winner for the game League of Legends is a difficult task. There are many aspects of the game that must be considered. Player skill level, champion strength and Internet connectivity issues are just a few examples. The most accurate predictor to date is the summed total of each team's players champion win rate.
+</p>
+
+<h3>
+    Methods
+</h3>
+
+<h4>
+    Introduction
+</h4>
+
+<p>
+    Riot Games' League of Legends API was used to collect data for this analysis. The API provided endpoints for fetching player information, player match history and detailed match information. In addition, <a href="http://www.cs.waikato.ac.nz/ml/weka/" target="_blank">Weka</a> was used for data analysis and the creation of the predictive model. Several methods were used prior to the one discussed in this article, however they were left out for brevity.
+</p>
+
+<h4>
+    Data Collection
+</h4>
+
+<p>
+    Approximately 1,000 games from each League of Legends ranking system (bronze through challenger) was collected for training and testing the model. Data collection consisted of querying the API for players from each rank and finding that player's previous 20 matches. In some cases more data was collected than others. For example, there are significantly more players in the bronze tier than the challenger tier. 
+</p>
+
+<p>
+    While querying the API for each match, several sub-API calls were made to obtain each player's win rate for that champion. Once each player's win rates were collected, the totals were summed for each team. In the event that a player has less than 10 games on that particular champion; a win rate of 50% was assigned. Each team's total win rate never exceeds 500 percent (5 players per team with a maximum of 100% win rate per player).
+</p>
+
+<p>
+    A single entry would look like the following:
+</p>
+
+<table border="1" cellpadding="1" cellspacing="0"><tbody>
+<tr>
+<td>
+                <strong>BlueTeam</strong>
+            </td>
+            <td>
+                <strong>RedTeam</strong>
+            </td>
+            <td>
+                <strong>Winner</strong>
+            </td>
+        </tr>
+<tr>
+<td>
+                385
+            </td>
+            <td>
+                407
+            </td>
+            <td>
+                red
+            </td>
+        </tr>
+</tbody></table>
+<h4>
+    Data Analysis
+</h4>
+
+<p>
+    Initially, the data analysis process consisted of training and testing the model from the higher ranked match data (masters and challenger) using Weka. A number of different algorithms were used in the model: decision trees, baysian network and rule based. After testing all of the different models, the J48 decision tree algorithm performed the best (with adjustments to pruning etc).
+</p>
+
+<p>
+    Here are the J48 options used:
+</p>
+
+<pre>
+<code class="language-bash">weka.classifiers.trees.J48 -R -N 5 -Q 1 -B -M 2 -A</code></pre>
+
+<p>
+    With these options and using the challenger data set the model was able to successfully predict 90% of the games correctly. Testing the model against lower ranked matches showed that the model became more accurate when testing against lower tier data. For example, the master tier has an accuracy of 94% and the lowest tier (bronze) has an accuracy of 98%.
+</p>
+
+<h4>
+    Predictive Model Implementation
+</h4>
+
+<p>
+    The output from the Weka J48 decision tree algorithm was implemented in the Go programming language. You can see the full implementation below.
+</p>
+
+<pre>
+<code class="language-go">package classifiers
+
+/*
+=== Run information ===
+
+Scheme:weka.classifiers.trees.J48 -R -N 5 -Q 1 -B -M 2 -A
+Relation:     team_win_rates_masters2
+Instances:    3304
+Attributes:   3
+              BlueTeam
+              RedTeam
+              Win
+Test mode:user supplied test set:     641instances
+
+=== Classifier model (full training set) ===
+
+J48 pruned tree
+------------------
+
+RedTeam &lt;= 285.871643
+|   BlueTeam &lt;= 253.400162
+|   |   RedTeam &lt;= 258.712128
+|   |   |   BlueTeam &lt;= 229.873032: RedTeam (33.0/5.0)
+|   |   |   BlueTeam &gt; 229.873032: BlueTeam (38.0/13.0)
+|   |   RedTeam &gt; 258.712128: RedTeam (146.0/10.0)
+|   BlueTeam &gt; 253.400162
+|   |   RedTeam &lt;= 245.268372: BlueTeam (556.0/6.0)
+|   |   RedTeam &gt; 245.268372
+|   |   |   BlueTeam &lt;= 302.380981
+|   |   |   |   BlueTeam &lt;= 265.680847: RedTeam (53.0/18.0)
+|   |   |   |   BlueTeam &gt; 265.680847: BlueTeam (262.0/90.0)
+|   |   |   BlueTeam &gt; 302.380981: BlueTeam (286.0/18.0)
+RedTeam &gt; 285.871643
+|   BlueTeam &lt;= 284.519928: RedTeam (954.0/50.0)
+|   BlueTeam &gt; 284.519928
+|   |   RedTeam &lt;= 316.890594: BlueTeam (196.0/62.0)
+|   |   RedTeam &gt; 316.890594
+|   |   |   BlueTeam &lt;= 324.080078: RedTeam (101.0/6.0)
+|   |   |   BlueTeam &gt; 324.080078
+|   |   |   |   BlueTeam &lt;= 344.303864
+|   |   |   |   |   RedTeam &lt;= 330.416656: BlueTeam (7.0/2.0)
+|   |   |   |   |   RedTeam &gt; 330.416656: RedTeam (7.0)
+|   |   |   |   BlueTeam &gt; 344.303864: BlueTeam (5.0)
+
+Number of Leaves  :     13
+
+Size of the tree :  25
+
+
+Time taken to build model: 0.03 seconds
+
+=== Evaluation on test set ===
+=== Summary ===
+
+Correctly Classified Instances         603               94.0718 %
+Incorrectly Classified Instances        38                5.9282 %
+Kappa statistic                          0.8814
+Mean absolute error                      0.1043
+Root mean squared error                  0.2121
+Relative absolute error                 20.856  %
+Root relative squared error             42.3594 %
+Total Number of Instances              641
+
+=== Detailed Accuracy By Class ===
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.956     0.075      0.927     0.956     0.942      0.975    BlueTeam
+                 0.925     0.044      0.955     0.925     0.94       0.975    RedTeam
+Weighted Avg.    0.941     0.059      0.941     0.941     0.941      0.975
+
+=== Confusion Matrix ===
+
+   a   b   &lt;-- classified as
+ 306  14 |   a = BlueTeam
+  24 297 |   b = RedTeam
+*/
+
+// This classifies which league of legends team will win based on the
+// summation of each player's specific champion win rate for their team.
+// This is the implementation of the J48 decision tree's output. Overall this
+// classifier has an accuracy of rougly 92%.
+// The output of this classifier is a string of "blue" or "red".
+func CWRWinningTeamClassifier(blueWinRate float64, redWinRate float64) string {
+    var winner string
+    if redWinRate &lt;= 285.871643 {
+        if blueWinRate &lt;= 253.400162 {
+            if redWinRate &lt;= 258.712128 {
+                if blueWinRate &lt;= 229.873032 {
+                    winner = "red"
+                } else {
+                    winner = "blue"
+                }
+            } else {
+                winner = "red"
+            }
+        } else {
+            if redWinRate &lt;= 245.268372 {
+                winner = "blue"
+            } else {
+                if blueWinRate &lt;= 302.380981 {
+                    if blueWinRate &lt;= 265.680847 {
+                        winner = "red"
+                    } else {
+                        winner = "blue"
+                    }
+                } else {
+                    winner = "blue"
+                }
+            }
+        }
+    } else {
+        if blueWinRate &lt;= 284.519928 {
+            winner = "red"
+        } else {
+            if redWinRate &lt;= 316.890594 {
+                winner = "blue"
+            } else {
+                if blueWinRate &lt;= 324.080078 {
+                    winner = "red"
+                } else {
+                    if blueWinRate &lt;= 344.303864 {
+                        if redWinRate &lt;= 330.416656 {
+                            winner = "blue"
+                        } else {
+                            winner = "red"
+                        }
+                    } else {
+                        winner = "blue"
+                    }
+                }
+            }
+        }
+    }
+    return winner
+}</code></pre>
+
+<h3>
+    Conclusion
+</h3>
+
+<p>
+    In conclusion, the best predictor for determining the winner of ranked League of Legends games seems to be the champion win rate. Using the model at any rank gives a very accurate prediction of 90% to 98%. If you are interested in using this implementation, then please visit <a href="http://loldestiny.tylermarrs.com" target="_blank">loldestiny.tylermarrs.com</a>.
+</p>
+
+<p></p>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/data-analytics/" rel="tag">data analytics</a></li>
+            <li><a class="tag p-category" href="../../categories/data-science/" rel="tag">data science</a></li>
+            <li><a class="tag p-category" href="../../categories/league-of-legends/" rel="tag">league of legends</a></li>
+            <li><a class="tag p-category" href="../../categories/predictive-modeling/" rel="tag">predictive modeling</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../challenger-tier-baron-throw-analysis/" rel="prev" title="Challenger Tier Baron Throw Analysis">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../convert-23-and-me-raw-data-to-vcf/" rel="next" title="Convert 23 and Me Raw Data to VCF">Next post</a>
+            </li>
+        </ul></nav></aside></article>
+</div>
+<!--End of body content-->
+</div>
+<div class="footerbox">
+  Contents © 2020 Tyler Marrs
+  
+</div>
+
+            <script src="../../assets/js/all-nocdn.js"></script><!-- Add Jumbotron scroll js --><script type="text/javascript">//<![CDATA[
+$(window).load(function(){
+  $(window).scroll(function() {
+    var scrolledY = $(window).scrollTop();
+    $('.jumbotron').css('background-position', 'left ' + ((scrolledY)) + 'px');
+  });
+});//]]>
+</script><!-- fancy dates --><script>
+moment.locale("en");
+fancydates(0, "YYYY-MM-DD");
+</script><!-- end fancy dates --><script>
+baguetteBox.run('div#content', {
+    ignoreClass: 'islink',
+    captions: function(element) {
+        return element.getElementsByTagName('img')[0].alt;
+}});
+</script><!-- Abstract hide/show
+<script src"/assets/js/div_toggle.js"></script>
+--><script type="text/javascript">
+function toggle(showHideDiv, switchTextDiv) {
+    var ele = document.getElementById(showHideDiv);
+    var text = document.getElementById(switchTextDiv);
+    if(ele.style.display == "none") {
+        ele.style.display = "block";
+        text.innerHTML = "[hide abstract]";
+    }
+    else {
+            ele.style.display = "none";
+            text.innerHTML = "[show abstract]";
+    }
+}
+</script>
+</body>
+</html>

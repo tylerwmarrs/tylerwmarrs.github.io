@@ -1,0 +1,1766 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about data science)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/data-science.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Dedupe - Record Deduplication</title><link>http://tylermarrs.com/posts/record-deduplication-pandas/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;A Data Scientist's task is 80% data cleaning and 20% modelling. In this post, I show how you can deduplicate records quicker utilizing the dedupe library. The dedupe library, from the company Dedupe.io, essentially makes the task of identifying duplicate records easy. You train a model and it clusters duplicates. Thankfully the company released an open source library that can be used by anyone with knowledge of coding. However, if you are not inclined to write code, I suggest that you check out their GUI software at &lt;a href="http://dedupe.io" target="_blank"&gt;dedupe.io&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This post will focus on a library, pandas dedupe, that I have contributed to. It brings the power of dedupe to the pandas library making it interactive within a Jupyter notebook. The pandas dedupe library is found at:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/Lyonk71/pandas-dedupe" target="_blank"&gt;https://github.com/Lyonk71/pandas-dedupe&lt;/a&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Install-Pandas-Dedupe-Library"&gt;Install Pandas Dedupe Library&lt;a class="anchor-link" href="http://tylermarrs.com/posts/record-deduplication-pandas/#Install-Pandas-Dedupe-Library"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [1]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;pip install git+git://github.com/Lyonk71/pandas-dedupe.git
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt"&gt;&lt;/div&gt;
+
+
+&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
+&lt;pre&gt;Collecting git+git://github.com/Lyonk71/pandas-dedupe.git
+  Cloning git://github.com/Lyonk71/pandas-dedupe.git to c:\users\tyler\appdata\local\temp\pip-req-build-xytctzaq
+Requirement already satisfied (use --upgrade to upgrade): pandas-dedupe==0.42 from git+git://github.com/Lyonk71/pandas-dedupe.git in c:\users\tyler\src\pandas-dedupe
+Requirement already satisfied: dedupe in c:\programdata\anaconda3\lib\site-packages (from pandas-dedupe==0.42) (1.9.6)
+Requirement already satisfied: unidecode in c:\programdata\anaconda3\lib\site-packages (from pandas-dedupe==0.42) (1.0.23)
+Requirement already satisfied: pandas in c:\programdata\anaconda3\lib\site-packages (from pandas-dedupe==0.42) (0.20.1)
+Requirement already satisfied: affinegap&amp;gt;=1.3 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (1.10)
+Requirement already satisfied: future&amp;gt;=0.14 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (0.17.1)
+Requirement already satisfied: dedupe-hcluster in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (0.3.6)
+Requirement already satisfied: rlr&amp;gt;=2.4.3 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (2.4.5)
+Requirement already satisfied: doublemetaphone in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (0.1)
+Requirement already satisfied: simplecosine&amp;gt;=1.2 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (1.2)
+Requirement already satisfied: zope.index in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (4.4.0)
+Requirement already satisfied: highered&amp;gt;=0.2.0 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (0.2.1)
+Requirement already satisfied: numpy&amp;gt;=1.13 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (1.16.2)
+Requirement already satisfied: fastcluster&amp;lt;1.1.25 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (1.1.24)
+Requirement already satisfied: BTrees&amp;gt;=4.1.4 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (4.5.1)
+Requirement already satisfied: Levenshtein-search in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (1.4.4)
+Requirement already satisfied: categorical-distance&amp;gt;=1.9 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (1.9)
+Requirement already satisfied: dedupe-variable-datetime in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (0.1.5)
+Requirement already satisfied: simplejson in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (3.16.0)
+Requirement already satisfied: haversine&amp;gt;=0.4.1 in c:\programdata\anaconda3\lib\site-packages (from dedupe-&amp;gt;pandas-dedupe==0.42) (2.0.0)
+Requirement already satisfied: python-dateutil&amp;gt;=2 in c:\programdata\anaconda3\lib\site-packages (from pandas-&amp;gt;pandas-dedupe==0.42) (2.6.0)
+Requirement already satisfied: pytz&amp;gt;=2011k in c:\programdata\anaconda3\lib\site-packages (from pandas-&amp;gt;pandas-dedupe==0.42) (2017.2)
+Requirement already satisfied: pylbfgs in c:\programdata\anaconda3\lib\site-packages (from rlr&amp;gt;=2.4.3-&amp;gt;dedupe-&amp;gt;pandas-dedupe==0.42) (0.2.0.12)
+Requirement already satisfied: setuptools in c:\programdata\anaconda3\lib\site-packages (from zope.index-&amp;gt;dedupe-&amp;gt;pandas-dedupe==0.42) (39.2.0)
+Requirement already satisfied: persistent in c:\programdata\anaconda3\lib\site-packages (from zope.index-&amp;gt;dedupe-&amp;gt;pandas-dedupe==0.42) (4.4.3)
+Requirement already satisfied: six in c:\programdata\anaconda3\lib\site-packages (from zope.index-&amp;gt;dedupe-&amp;gt;pandas-dedupe==0.42) (1.10.0)
+Requirement already satisfied: zope.interface in c:\programdata\anaconda3\lib\site-packages (from zope.index-&amp;gt;dedupe-&amp;gt;pandas-dedupe==0.42) (4.6.0)
+Requirement already satisfied: pyhacrf-datamade&amp;gt;=0.2.0 in c:\programdata\anaconda3\lib\site-packages (from highered&amp;gt;=0.2.0-&amp;gt;dedupe-&amp;gt;pandas-dedupe==0.42) (0.2.3)
+Requirement already satisfied: datetime-distance in c:\programdata\anaconda3\lib\site-packages (from dedupe-variable-datetime-&amp;gt;dedupe-&amp;gt;pandas-dedupe==0.42) (0.1.3)
+Building wheels for collected packages: pandas-dedupe
+  Building wheel for pandas-dedupe (setup.py): started
+  Building wheel for pandas-dedupe (setup.py): finished with status 'done'
+  Stored in directory: C:\Users\tyler\AppData\Local\Temp\pip-ephem-wheel-cache-yfm93kjy\wheels\13\cd\fe\56faa6c628f81a5fac9c9f4245ab7b1f57dc2df48159f0a9b5
+Successfully built pandas-dedupe
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt"&gt;&lt;/div&gt;
+
+
+&lt;div class="output_subarea output_stream output_stderr output_text"&gt;
+&lt;pre&gt;You are using pip version 19.0.3, however version 19.1 is available.
+You should consider upgrading via the 'python -m pip install --upgrade pip' command.
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Example-of-Deduplication"&gt;Example of Deduplication&lt;a class="anchor-link" href="http://tylermarrs.com/posts/record-deduplication-pandas/#Example-of-Deduplication"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [2]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pandas_dedupe&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;dedupe_dataframe&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [3]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Generate-Fake-Data"&gt;Generate Fake Data&lt;a class="anchor-link" href="http://tylermarrs.com/posts/record-deduplication-pandas/#Generate-Fake-Data"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;In this section I generate some fake data and duplicate some records.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [4]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;faker&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [5]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;fake&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;faker&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Faker&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [6]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s1"&gt;'Name'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt;
+    &lt;span class="s1"&gt;'Address'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'Name'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fake&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+    &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'Address'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fake&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;address&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DataFrame&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Duplicate-Records"&gt;Duplicate Records&lt;a class="anchor-link" href="http://tylermarrs.com/posts/record-deduplication-pandas/#Duplicate-Records"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Here I duplicate some records so that we can demonstrate dedupe. When you have already trained the model pandas_dedupe reads that training file and uses that for clustering.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [7]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;concat&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;frac&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;0.2&lt;/span&gt;&lt;span class="p"&gt;)])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [8]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt output_prompt"&gt;Out[8]:&lt;/div&gt;
+
+
+
+
+&lt;div class="output_text output_subarea output_execute_result"&gt;
+&lt;pre&gt;120&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [9]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;drop_duplicates&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt output_prompt"&gt;Out[9]:&lt;/div&gt;
+
+
+
+
+&lt;div class="output_text output_subarea output_execute_result"&gt;
+&lt;pre&gt;100&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [10]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dedupe_df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dedupe_dataframe&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'Name'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'Address'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt"&gt;&lt;/div&gt;
+
+
+&lt;div class="output_subarea output_stream output_stderr output_text"&gt;
+&lt;pre&gt;WARNING:dedupe.backport:Dedupe does not currently support multiprocessing on Windows
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt"&gt;&lt;/div&gt;
+
+
+&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
+&lt;pre&gt;importing data ...
+reading from dedupe_dataframe_learned_settings
+clustering...
+# duplicate sets 6
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Illustrate-Dedupe"&gt;Illustrate Dedupe&lt;a class="anchor-link" href="http://tylermarrs.com/posts/record-deduplication-pandas/#Illustrate-Dedupe"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Dedupe will prompt with many records that it thinks are similar. You tell it what is and isn't similar so that the model can give better results.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;dedupe_df = dedupe_dataframe(df, ['Name', 'Address'])&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Dedupe-Output"&gt;Dedupe Output&lt;a class="anchor-link" href="http://tylermarrs.com/posts/record-deduplication-pandas/#Dedupe-Output"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Once the training and clustering process is complete, you are presented with a dataframe that provides a cluster id and confidence. Records with similar cluster ids are considered as duplicates. The confidence score provides you with a certaintity score from 0 to 1.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [11]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dedupe_df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sort_values&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s1"&gt;'confidence'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'cluster id'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;ascending&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;False&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt output_prompt"&gt;Out[11]:&lt;/div&gt;
+
+
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style&gt;
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Address&lt;/th&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;cluster id&lt;/th&gt;
+      &lt;th&gt;confidence&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;52&lt;/th&gt;
+      &lt;td&gt;028 michael orchard suite 654 carterside, in 6...&lt;/td&gt;
+      &lt;td&gt;michael pugh&lt;/td&gt;
+      &lt;td&gt;3.0&lt;/td&gt;
+      &lt;td&gt;0.434289&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;98&lt;/th&gt;
+      &lt;td&gt;881 adrian centers apt. 030 lake timothymouth,...&lt;/td&gt;
+      &lt;td&gt;brett bowman&lt;/td&gt;
+      &lt;td&gt;3.0&lt;/td&gt;
+      &lt;td&gt;0.434289&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;unit 1117 box 7761 dpo ap 36039&lt;/td&gt;
+      &lt;td&gt;tami sanders&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.406689&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;62&lt;/th&gt;
+      &lt;td&gt;unit 5686 box 6589 dpo ap 37867&lt;/td&gt;
+      &lt;td&gt;holly zuniga&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.406689&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;62&lt;/th&gt;
+      &lt;td&gt;unit 5686 box 6589 dpo ap 37867&lt;/td&gt;
+      &lt;td&gt;holly zuniga&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.406689&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;57&lt;/th&gt;
+      &lt;td&gt;0871 ross court apt. 021 north josephstad, dc ...&lt;/td&gt;
+      &lt;td&gt;edward patrick&lt;/td&gt;
+      &lt;td&gt;4.0&lt;/td&gt;
+      &lt;td&gt;0.399691&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;57&lt;/th&gt;
+      &lt;td&gt;0871 ross court apt. 021 north josephstad, dc ...&lt;/td&gt;
+      &lt;td&gt;edward patrick&lt;/td&gt;
+      &lt;td&gt;4.0&lt;/td&gt;
+      &lt;td&gt;0.399691&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;79&lt;/th&gt;
+      &lt;td&gt;873 leblanc rapid apt. 613 new virginia, nd 66835&lt;/td&gt;
+      &lt;td&gt;veronica barnes&lt;/td&gt;
+      &lt;td&gt;4.0&lt;/td&gt;
+      &lt;td&gt;0.359868&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;13&lt;/th&gt;
+      &lt;td&gt;psc 7201, box 7089 apo ap 08072&lt;/td&gt;
+      &lt;td&gt;donna rodriguez&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.358922&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;59&lt;/th&gt;
+      &lt;td&gt;873 becker lodge haroldfort, wa 06364&lt;/td&gt;
+      &lt;td&gt;carolyn cruz&lt;/td&gt;
+      &lt;td&gt;4.0&lt;/td&gt;
+      &lt;td&gt;0.355432&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;psc 4428, box 6674 apo ae 16543&lt;/td&gt;
+      &lt;td&gt;kathryn rios&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.354226&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;41&lt;/th&gt;
+      &lt;td&gt;psc 6766, box 2963 apo ap 87901&lt;/td&gt;
+      &lt;td&gt;timothy ellis&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.353936&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;41&lt;/th&gt;
+      &lt;td&gt;psc 6766, box 2963 apo ap 87901&lt;/td&gt;
+      &lt;td&gt;timothy ellis&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.353936&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;14&lt;/th&gt;
+      &lt;td&gt;psc 7160, box 2173 apo aa 44802&lt;/td&gt;
+      &lt;td&gt;todd fitzgerald&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.350237&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;66&lt;/th&gt;
+      &lt;td&gt;607 edward plains suite 962 sydneyhaven, in 63516&lt;/td&gt;
+      &lt;td&gt;kimberly becker&lt;/td&gt;
+      &lt;td&gt;5.0&lt;/td&gt;
+      &lt;td&gt;0.342488&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;80&lt;/th&gt;
+      &lt;td&gt;605 allen motorway apt. 482 veronicaport, ny 9...&lt;/td&gt;
+      &lt;td&gt;lauren jensen&lt;/td&gt;
+      &lt;td&gt;5.0&lt;/td&gt;
+      &lt;td&gt;0.342488&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;56&lt;/th&gt;
+      &lt;td&gt;psc 2245, box 6643 apo aa 25112&lt;/td&gt;
+      &lt;td&gt;alexander gardner&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.332051&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;67&lt;/th&gt;
+      &lt;td&gt;psc 0257, box 1093 apo ae 29265&lt;/td&gt;
+      &lt;td&gt;lisa walter&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.328142&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;67&lt;/th&gt;
+      &lt;td&gt;psc 0257, box 1093 apo ae 29265&lt;/td&gt;
+      &lt;td&gt;lisa walter&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.328142&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;19&lt;/th&gt;
+      &lt;td&gt;552 pierce lodge port kari, ky 85896&lt;/td&gt;
+      &lt;td&gt;daniel hoffman&lt;/td&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;0.314833&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;69&lt;/th&gt;
+      &lt;td&gt;8935 kidd river apt. 554 north charleneport, t...&lt;/td&gt;
+      &lt;td&gt;tammie foster&lt;/td&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;0.314833&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;8436 jones pine suite 444 east heidi, nh 32076&lt;/td&gt;
+      &lt;td&gt;jennifer villa&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;084 chambers drive apt. 915 bryanmouth, nc 41999&lt;/td&gt;
+      &lt;td&gt;peggy scott&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1034 garrison flat phillipview, nh 17993&lt;/td&gt;
+      &lt;td&gt;teresa young&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;usns owens fpo ae 15528&lt;/td&gt;
+      &lt;td&gt;michael russell&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;usns owens fpo ae 15528&lt;/td&gt;
+      &lt;td&gt;michael russell&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;5288 cervantes spurs apt. 210 lake matthewport...&lt;/td&gt;
+      &lt;td&gt;susan allen&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;6775 joseph lakes apt. 870 west olivia, in 47685&lt;/td&gt;
+      &lt;td&gt;johnny newton&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;78796 mallory street port mark, sd 96285&lt;/td&gt;
+      &lt;td&gt;ronald guerra&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;800 sanders drive port mark, md 29074&lt;/td&gt;
+      &lt;td&gt;elizabeth cummings&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;...&lt;/th&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;72&lt;/th&gt;
+      &lt;td&gt;29989 julie street apt. 167 north dylanbury, n...&lt;/td&gt;
+      &lt;td&gt;gregory smith&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;73&lt;/th&gt;
+      &lt;td&gt;57766 alvarez neck apt. 525 new mauricefurt, s...&lt;/td&gt;
+      &lt;td&gt;jennifer stephens&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;74&lt;/th&gt;
+      &lt;td&gt;21038 scott fork port coryville, in 32757&lt;/td&gt;
+      &lt;td&gt;charles hunt&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;75&lt;/th&gt;
+      &lt;td&gt;7783 hughes rest apt. 006 lake william, nd 66845&lt;/td&gt;
+      &lt;td&gt;jill alexander&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;76&lt;/th&gt;
+      &lt;td&gt;345 april camp suite 232 east christopher, il ...&lt;/td&gt;
+      &lt;td&gt;donald rogers&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;77&lt;/th&gt;
+      &lt;td&gt;0638 connie centers gardnermouth, or 34880&lt;/td&gt;
+      &lt;td&gt;jose burns&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;77&lt;/th&gt;
+      &lt;td&gt;0638 connie centers gardnermouth, or 34880&lt;/td&gt;
+      &lt;td&gt;jose burns&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;78&lt;/th&gt;
+      &lt;td&gt;648 zimmerman spur tranville, il 59313&lt;/td&gt;
+      &lt;td&gt;christopher kelly&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;81&lt;/th&gt;
+      &lt;td&gt;383 daniel trail suite 919 port frank, co 15515&lt;/td&gt;
+      &lt;td&gt;carlos walker&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;82&lt;/th&gt;
+      &lt;td&gt;4882 davis passage suite 848 lake danaville, k...&lt;/td&gt;
+      &lt;td&gt;michael miranda&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;83&lt;/th&gt;
+      &lt;td&gt;0038 rogers keys apt. 163 fergusonchester, mo ...&lt;/td&gt;
+      &lt;td&gt;derek johnson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;84&lt;/th&gt;
+      &lt;td&gt;8991 dillon well hunterborough, fl 59577&lt;/td&gt;
+      &lt;td&gt;chad nelson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;84&lt;/th&gt;
+      &lt;td&gt;8991 dillon well hunterborough, fl 59577&lt;/td&gt;
+      &lt;td&gt;chad nelson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;85&lt;/th&gt;
+      &lt;td&gt;777 turner extension tammybury, ok 61562&lt;/td&gt;
+      &lt;td&gt;matthew lamb&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;86&lt;/th&gt;
+      &lt;td&gt;86773 lauren union apt. 215 davidbury, ok 85820&lt;/td&gt;
+      &lt;td&gt;margaret bennett&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;86&lt;/th&gt;
+      &lt;td&gt;86773 lauren union apt. 215 davidbury, ok 85820&lt;/td&gt;
+      &lt;td&gt;margaret bennett&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;87&lt;/th&gt;
+      &lt;td&gt;493 armstrong vista port james, dc 08747&lt;/td&gt;
+      &lt;td&gt;troy garcia&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;87&lt;/th&gt;
+      &lt;td&gt;493 armstrong vista port james, dc 08747&lt;/td&gt;
+      &lt;td&gt;troy garcia&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;88&lt;/th&gt;
+      &lt;td&gt;6651 giles crest ortegamouth, nm 21927&lt;/td&gt;
+      &lt;td&gt;yvonne willis&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;89&lt;/th&gt;
+      &lt;td&gt;5751 garrett curve suite 957 emilyhaven, ut 51537&lt;/td&gt;
+      &lt;td&gt;christopher martinez&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;90&lt;/th&gt;
+      &lt;td&gt;461 kimberly turnpike michaelstad, dc 03933&lt;/td&gt;
+      &lt;td&gt;scott mitchell&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;91&lt;/th&gt;
+      &lt;td&gt;72268 white inlet guerrerotown, sd 47498&lt;/td&gt;
+      &lt;td&gt;john gill&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;92&lt;/th&gt;
+      &lt;td&gt;78043 klein vista apt. 904 west adrianshire, n...&lt;/td&gt;
+      &lt;td&gt;tracy newman&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;93&lt;/th&gt;
+      &lt;td&gt;172 gordon vista apt. 897 mayton, ca 88189&lt;/td&gt;
+      &lt;td&gt;jordan brown&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;94&lt;/th&gt;
+      &lt;td&gt;889 kenneth lake hernandezberg, la 76212&lt;/td&gt;
+      &lt;td&gt;kimberly meadows&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;95&lt;/th&gt;
+      &lt;td&gt;1640 watkins view north omarhaven, al 93195&lt;/td&gt;
+      &lt;td&gt;christopher garcia&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;96&lt;/th&gt;
+      &lt;td&gt;48848 jennifer loaf apt. 203 port katherinemou...&lt;/td&gt;
+      &lt;td&gt;joanna snyder&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;96&lt;/th&gt;
+      &lt;td&gt;48848 jennifer loaf apt. 203 port katherinemou...&lt;/td&gt;
+      &lt;td&gt;joanna snyder&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;97&lt;/th&gt;
+      &lt;td&gt;9160 moreno knoll apt. 368 new sean, nc 61255&lt;/td&gt;
+      &lt;td&gt;sarah hayes&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;99&lt;/th&gt;
+      &lt;td&gt;157 bonilla cliff suite 675 clarktown, wy 74303&lt;/td&gt;
+      &lt;td&gt;eric lee&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;120 rows × 4 columns&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Notice that I suggested dedupe should consider invalid records as similar. This can affect the end result of your clustered, however for demonstration purposes this suffices.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>data analysis</category><category>data cleaning</category><category>data deduplication</category><category>data science</category><guid>http://tylermarrs.com/posts/record-deduplication-pandas/</guid><pubDate>Thu, 25 Apr 2019 05:00:00 GMT</pubDate></item><item><title>Deriving Markov Transition Matrices</title><link>http://tylermarrs.com/posts/deriving-markov-transition-matrices/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Introduction"&gt;Introduction&lt;a class="anchor-link" href="http://tylermarrs.com/posts/deriving-markov-transition-matrices/#Introduction"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;I had a need at work to understand the flow of a system. Knowing that a transition matrix would be perfect to understand state transitions, I researched available libraries within the Python ecosystem. Unfortunately, I could not find a suitable solution.&lt;/p&gt;
+&lt;p&gt;My desires in a library included:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;It must capture states as strings or numbers for easy analysis.&lt;/li&gt;
+&lt;li&gt;Store both frequencies and probabilities of state transitions.&lt;/li&gt;
+&lt;li&gt;Allow simple filtering of frequencies and probabilities.&lt;/li&gt;
+&lt;li&gt;Output the derived matrix as a panadas dataframe or numpy matrix.&lt;/li&gt;
+&lt;li&gt;Plot the matrix as a Digraph.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This blog post shows my method of deriving a Markov transition matrix that covers all of those desires. This blog post &lt;strong&gt;DOES NOT&lt;/strong&gt; discuss what a Markov transition matrix is in depth. You should read more about them on your own.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Code"&gt;Code&lt;a class="anchor-link" href="http://tylermarrs.com/posts/deriving-markov-transition-matrices/#Code"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;The code block below contains two important classes; Transition and TransitionMatrix. Transition is a class that keeps track of the current state and next state along with the frequency and probability. The TransitionMatrix stores all state transitions and provides methods for plotting and merging.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;
+The graphviz and pandas modules are required to run this code.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [1]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;This module is used to compute Markov Chains.&lt;/span&gt;
+&lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;itertools&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;copy&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;graphviz&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Digraph&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;graphviz&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Source&lt;/span&gt;
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Transition&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;    This class hold meta-data about a transition between a Markov stochastic process.&lt;/span&gt;
+&lt;span class="sd"&gt;    Essentially it is used to keep track of frequencies and to compute probability of the&lt;/span&gt;
+&lt;span class="sd"&gt;    transition.&lt;/span&gt;
+&lt;span class="sd"&gt;    """&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;current_state&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;next_state&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;        Creates a transition object given the current_state and next_state as strings.&lt;/span&gt;
+&lt;span class="sd"&gt;        &lt;/span&gt;
+
+&lt;span class="sd"&gt;        Parameters&lt;/span&gt;
+&lt;span class="sd"&gt;        ----------&lt;/span&gt;
+&lt;span class="sd"&gt;        current_state : str&lt;/span&gt;
+&lt;span class="sd"&gt;            The current state of this transition.&lt;/span&gt;
+&lt;span class="sd"&gt;        next_state : str&lt;/span&gt;
+&lt;span class="sd"&gt;            The next state of this transition.&lt;/span&gt;
+&lt;span class="sd"&gt;        """&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;current_state&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;next_state&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;freq&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;increment_freq&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;freq&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;increment_freq_by&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;freq&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;    
+            
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;compute_prob&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;current_state_freqs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;freq&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;current_state_freqs&lt;/span&gt;
+        &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;ZeroDivisionError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;pass&lt;/span&gt;
+    
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__hash__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;hash&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__eq__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;other&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;other&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Transition&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;False&lt;/span&gt;
+        
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;other&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt; \
+            &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;other&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt;
+        
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__str__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s1"&gt;'&lt;/span&gt;&lt;span class="si"&gt;{}&lt;/span&gt;&lt;span class="s1"&gt; -&amp;gt; &lt;/span&gt;&lt;span class="si"&gt;{}&lt;/span&gt;&lt;span class="s1"&gt;'&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__copy__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;tmp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Transition&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;increment_freq_by&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;freq&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;tmp&lt;/span&gt;
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;TransitionMatrix&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;    The transition matrix is an object that is used to derive the Stochastic matrix&lt;/span&gt;
+&lt;span class="sd"&gt;    of a Markov chain. Internally, everything is storing in a dictionary of transitions.&lt;/span&gt;
+&lt;span class="sd"&gt;    This class also provides methods to obtain dict of dict, pandas dataframe, dotlang or&lt;/span&gt;
+&lt;span class="sd"&gt;    a graph representation of the matrix.&lt;/span&gt;
+&lt;span class="sd"&gt;    """&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;states&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;valid_states&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;        This kicks off the computation of the matrix given states and optionally valid states.&lt;/span&gt;
+&lt;span class="sd"&gt;        &lt;/span&gt;
+&lt;span class="sd"&gt;        Parameters&lt;/span&gt;
+&lt;span class="sd"&gt;        ----------&lt;/span&gt;
+&lt;span class="sd"&gt;        states : :obj:`list` of :obj:`obj`&lt;/span&gt;
+&lt;span class="sd"&gt;            The states to derive the matrix from. These states can be either int or str.&lt;/span&gt;
+&lt;span class="sd"&gt;        valid_states : :obj:`list of :obj:`obj`, optional&lt;/span&gt;
+&lt;span class="sd"&gt;            Optionally include valid states that are used to derive all valid transitions.&lt;/span&gt;
+&lt;span class="sd"&gt;        """&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+        
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;valid_states&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__generate_transitions&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;valid_states&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__generate_transitions&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;states&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;                
+        
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__compute_matrix&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;states&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__generate_transitions&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;states&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;        Internal method that generates all permutations of transitions.&lt;/span&gt;
+&lt;span class="sd"&gt;        """&lt;/span&gt;
+        &lt;span class="n"&gt;tmp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;itertools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;permutations&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;states&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+        &lt;span class="n"&gt;current&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+            
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;current&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+                &lt;span class="n"&gt;transition&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Transition&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;transition&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;transition&lt;/span&gt;
+                &lt;span class="n"&gt;current&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+            &lt;span class="n"&gt;transition&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Transition&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;transition&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;transition&lt;/span&gt;
+            
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__compute_matrix&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;states&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;        Internal method that computes frequencies and probability of the matrix.&lt;/span&gt;
+&lt;span class="sd"&gt;        """&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;j&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;zip&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;states&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;states&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:]):&lt;/span&gt;        
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Transition&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;increment_freq&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+            
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__compute_prob&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__compute_prob&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;        Internal method that computes the probability of all transitions.&lt;/span&gt;
+&lt;span class="sd"&gt;        """&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;transition&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;            
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;transition&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;compute_prob&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;transition&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+            &lt;span class="p"&gt;)&lt;/span&gt;
+            
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__recompute_from_transitions&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;        Internal method that is primarily used when filtering and/or combining transition&lt;/span&gt;
+&lt;span class="sd"&gt;        matrices together. It is used to derive current state frequencies from transitions.&lt;/span&gt;
+&lt;span class="sd"&gt;        This can then be used to compute the correct probabilities.&lt;/span&gt;
+&lt;span class="sd"&gt;        """&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;    
+            &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt;
+            &lt;span class="n"&gt;freq&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;freq&lt;/span&gt;
+            
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;freq&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;state_frequencies&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;freq&lt;/span&gt;
+        
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__compute_prob&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;as_dict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;include_all&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;        Converts the transition matrix into a dict of dicts.&lt;/span&gt;
+&lt;span class="sd"&gt;        """&lt;/span&gt;
+        &lt;span class="n"&gt;tmp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt;
+            &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt;
+            
+            &lt;span class="n"&gt;val&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;freq&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;val&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt;                        
+            
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;val&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;include_all&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;continue&lt;/span&gt;
+            
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+                
+            &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;val&lt;/span&gt;
+        
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;tmp&lt;/span&gt;
+    
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;as_dataframe&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;include_all&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DataFrame&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;as_dict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;include_all&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;include_all&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;as_dotlang&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt;
+            &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt;
+            &lt;span class="n"&gt;prob&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt;
+            
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;prob&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'   "&lt;/span&gt;&lt;span class="si"&gt;{}&lt;/span&gt;&lt;span class="s1"&gt;" -&amp;gt; "&lt;/span&gt;&lt;span class="si"&gt;{}&lt;/span&gt;&lt;span class="s1"&gt;" [label = "&lt;/span&gt;&lt;span class="si"&gt;{:2.4f}&lt;/span&gt;&lt;span class="s1"&gt;"]'&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s2"&gt;"digraph G {&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s2"&gt;}"&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;'&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;as_graph&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;g&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Digraph&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;format&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'svg'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;engine&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'dot'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_state&lt;/span&gt;
+            &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;next_state&lt;/span&gt;
+            &lt;span class="n"&gt;prob&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transitions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt;
+
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;prob&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;edge&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;label&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;" &lt;/span&gt;&lt;span class="si"&gt;{:2.4f}&lt;/span&gt;&lt;span class="s2"&gt; "&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;                
+
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Example"&gt;Example&lt;a class="anchor-link" href="http://tylermarrs.com/posts/deriving-markov-transition-matrices/#Example"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;In this example, I will generate a handful of states that occur linearly. The TransitionMatrix expects a list of values as the states or a string. If a string is passed, it treats each character in the string as a state.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [2]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [3]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;states_a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;choice&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s1"&gt;'A'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'B'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'C'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;0.2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.3&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Passing the states into the matrix derives the frequencies and probabilities.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [4]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;transition_matrix&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;TransitionMatrix&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;states_a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="DataFrame"&gt;DataFrame&lt;a class="anchor-link" href="http://tylermarrs.com/posts/deriving-markov-transition-matrices/#DataFrame"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;To obtain the matrix as a pandas dataframe we call the as_dataframe() method. By default we show the frequencies, however we can also get the probabilities.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [5]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;transition_matrix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;as_dataframe&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt output_prompt"&gt;Out[5]:&lt;/div&gt;
+
+
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;A&lt;/th&gt;
+      &lt;th&gt;B&lt;/th&gt;
+      &lt;th&gt;C&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;A&lt;/th&gt;
+      &lt;td&gt;41&lt;/td&gt;
+      &lt;td&gt;108&lt;/td&gt;
+      &lt;td&gt;59&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;B&lt;/th&gt;
+      &lt;td&gt;103&lt;/td&gt;
+      &lt;td&gt;238&lt;/td&gt;
+      &lt;td&gt;146&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;C&lt;/th&gt;
+      &lt;td&gt;63&lt;/td&gt;
+      &lt;td&gt;142&lt;/td&gt;
+      &lt;td&gt;99&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [6]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;transition_matrix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;as_dataframe&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt output_prompt"&gt;Out[6]:&lt;/div&gt;
+
+
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;A&lt;/th&gt;
+      &lt;th&gt;B&lt;/th&gt;
+      &lt;th&gt;C&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;A&lt;/th&gt;
+      &lt;td&gt;0.198068&lt;/td&gt;
+      &lt;td&gt;0.221311&lt;/td&gt;
+      &lt;td&gt;0.194079&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;B&lt;/th&gt;
+      &lt;td&gt;0.497585&lt;/td&gt;
+      &lt;td&gt;0.487705&lt;/td&gt;
+      &lt;td&gt;0.480263&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;C&lt;/th&gt;
+      &lt;td&gt;0.304348&lt;/td&gt;
+      &lt;td&gt;0.290984&lt;/td&gt;
+      &lt;td&gt;0.325658&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Visualize"&gt;Visualize&lt;a class="anchor-link" href="http://tylermarrs.com/posts/deriving-markov-transition-matrices/#Visualize"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We are able to visualize the transition matrix as a Digraph by calling the as_graph() method. If we wanted to export a dotfile, we can call the as_dotlang() method to obtain the dotlang string.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [7]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;transition_matrix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;as_graph&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt output_prompt"&gt;Out[7]:&lt;/div&gt;
+
+
+
+&lt;div class="output_svg output_subarea output_execute_result"&gt;
+&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+
+&lt;!-- Generated by graphviz version 2.36.0 (20140111.2315)
+ --&gt;
+&lt;!-- Title: %3 Pages: 1 --&gt;
+&lt;svg width="253pt" height="220pt" viewbox="0.00 0.00 253.00 220.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 216)"&gt;
+&lt;title&gt;%3&lt;/title&gt;
+&lt;polygon fill="white" stroke="none" points="-4,4 -4,-216 249,-216 249,4 -4,4"&gt;&lt;/polygon&gt;
+&lt;!-- B --&gt;
+&lt;g id="node1" class="node"&gt;&lt;title&gt;B&lt;/title&gt;
+&lt;ellipse fill="none" stroke="black" cx="125" cy="-194" rx="27" ry="18"&gt;&lt;/ellipse&gt;
+&lt;text text-anchor="middle" x="125" y="-190.3" font-family="Times,serif" font-size="14.00"&gt;B&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- B&amp;#45;&amp;gt;B --&gt;
+&lt;g id="edge1" class="edge"&gt;&lt;title&gt;B-&amp;gt;B&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M149.532,-202.121C160.508,-202.895 170,-200.188 170,-194 170,-189.843 165.715,-187.257 159.574,-186.242"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="159.652,-182.742 149.532,-185.879 159.4,-189.738 159.652,-182.742"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="193" y="-190.3" font-family="Times,serif" font-size="14.00"&gt; 0.4877 &lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- A --&gt;
+&lt;g id="node2" class="node"&gt;&lt;title&gt;A&lt;/title&gt;
+&lt;ellipse fill="none" stroke="black" cx="27" cy="-106" rx="27" ry="18"&gt;&lt;/ellipse&gt;
+&lt;text text-anchor="middle" x="27" y="-102.3" font-family="Times,serif" font-size="14.00"&gt;A&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- B&amp;#45;&amp;gt;A --&gt;
+&lt;g id="edge2" class="edge"&gt;&lt;title&gt;B-&amp;gt;A&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M97.9057,-191.535C74.8179,-188.683 42.9229,-180.595 27,-158 22.1944,-151.181 20.9262,-142.473 21.2424,-134.19"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="24.7379,-134.421 22.3434,-124.101 17.7792,-133.662 24.7379,-134.421"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="50" y="-146.3" font-family="Times,serif" font-size="14.00"&gt; 0.2213 &lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- C --&gt;
+&lt;g id="node3" class="node"&gt;&lt;title&gt;C&lt;/title&gt;
+&lt;ellipse fill="none" stroke="black" cx="125" cy="-18" rx="27" ry="18"&gt;&lt;/ellipse&gt;
+&lt;text text-anchor="middle" x="125" y="-14.3" font-family="Times,serif" font-size="14.00"&gt;C&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- B&amp;#45;&amp;gt;C --&gt;
+&lt;g id="edge3" class="edge"&gt;&lt;title&gt;B-&amp;gt;C&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M133.03,-176.657C135.451,-170.903 137.787,-164.298 139,-158 147.741,-112.612 147.741,-99.3882 139,-54 138.413,-50.9495 137.562,-47.8269 136.565,-44.7638"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="139.82,-43.4757 133.03,-35.3427 133.266,-45.9349 139.82,-43.4757"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="168" y="-102.3" font-family="Times,serif" font-size="14.00"&gt; 0.2910 &lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- A&amp;#45;&amp;gt;B --&gt;
+&lt;g id="edge5" class="edge"&gt;&lt;title&gt;A-&amp;gt;B&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M44.882,-119.794C53.5706,-126.213 64.0437,-134.254 73,-142 83.4609,-151.047 94.4751,-161.673 103.66,-170.877"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="101.379,-173.548 110.893,-178.209 106.362,-168.632 101.379,-173.548"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="112" y="-146.3" font-family="Times,serif" font-size="14.00"&gt; 0.4976 &lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- A&amp;#45;&amp;gt;A --&gt;
+&lt;g id="edge4" class="edge"&gt;&lt;title&gt;A-&amp;gt;A&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M51.5325,-114.121C62.5078,-114.895 72,-112.188 72,-106 72,-101.843 67.7151,-99.2567 61.5743,-98.2417"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="61.6524,-94.7424 51.5325,-97.8789 61.3995,-101.738 61.6524,-94.7424"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="95" y="-102.3" font-family="Times,serif" font-size="14.00"&gt; 0.1981 &lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- A&amp;#45;&amp;gt;C --&gt;
+&lt;g id="edge6" class="edge"&gt;&lt;title&gt;A-&amp;gt;C&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M22.3434,-87.8994C20.4858,-77.217 20.1654,-63.6983 27,-54 40.7459,-34.4944 66.3951,-25.7995 88.0056,-21.9522"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="88.5365,-25.4118 97.9057,-20.4653 87.4968,-18.4894 88.5365,-25.4118"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="50" y="-58.3" font-family="Times,serif" font-size="14.00"&gt; 0.3043 &lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- C&amp;#45;&amp;gt;B --&gt;
+&lt;g id="edge8" class="edge"&gt;&lt;title&gt;C-&amp;gt;B&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M143.995,-31.1189C160.979,-43.1924 184.724,-63.4428 195,-88 201.176,-102.76 201.176,-109.24 195,-124 186.33,-144.72 168.07,-162.374 152.374,-174.638"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="149.922,-172.1 143.995,-180.881 154.105,-177.713 149.922,-172.1"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="222" y="-102.3" font-family="Times,serif" font-size="14.00"&gt; 0.4803 &lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- C&amp;#45;&amp;gt;A --&gt;
+&lt;g id="edge9" class="edge"&gt;&lt;title&gt;C-&amp;gt;A&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M110.893,-33.7914C100.686,-44.2526 86.39,-58.4196 73,-70 66.7026,-75.4464 59.6553,-81.0388 53.0058,-86.1105"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="50.7801,-83.4047 44.882,-92.206 54.9814,-89.0038 50.7801,-83.4047"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="112" y="-58.3" font-family="Times,serif" font-size="14.00"&gt; 0.1941 &lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- C&amp;#45;&amp;gt;C --&gt;
+&lt;g id="edge7" class="edge"&gt;&lt;title&gt;C-&amp;gt;C&lt;/title&gt;
+&lt;path fill="none" stroke="black" d="M149.532,-26.1211C160.508,-26.8945 170,-24.1875 170,-18 170,-13.8428 165.715,-11.2567 159.574,-10.2417"&gt;&lt;/path&gt;
+&lt;polygon fill="black" stroke="black" points="159.652,-6.74237 149.532,-9.87891 159.4,-13.7378 159.652,-6.74237"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="193" y="-14.3" font-family="Times,serif" font-size="14.00"&gt; 0.3257 &lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Filtering"&gt;Filtering&lt;a class="anchor-link" href="http://tylermarrs.com/posts/deriving-markov-transition-matrices/#Filtering"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Filtering is easily accomplished with a pandas dataframe.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [8]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;transition_matrix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;as_dataframe&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prob&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [9]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mf"&gt;0.2&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+    &lt;div class="prompt output_prompt"&gt;Out[9]:&lt;/div&gt;
+
+
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;A&lt;/th&gt;
+      &lt;th&gt;B&lt;/th&gt;
+      &lt;th&gt;C&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;A&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.221311&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;B&lt;/th&gt;
+      &lt;td&gt;0.497585&lt;/td&gt;
+      &lt;td&gt;0.487705&lt;/td&gt;
+      &lt;td&gt;0.480263&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;C&lt;/th&gt;
+      &lt;td&gt;0.304348&lt;/td&gt;
+      &lt;td&gt;0.290984&lt;/td&gt;
+      &lt;td&gt;0.325658&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;You can see that we filtered on a probability of 0.2 creating a NaN probability between C and A.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>data science</category><category>markov</category><category>python</category><guid>http://tylermarrs.com/posts/deriving-markov-transition-matrices/</guid><pubDate>Sat, 05 Jan 2019 06:07:29 GMT</pubDate></item><item><title>Ranked Win Predictor</title><link>http://tylermarrs.com/posts/ranked-win-predictor/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;
+    Abstract
+&lt;/h3&gt;
+&lt;p&gt;
+    This analysis documents the techniques involved in predicting which team will win in a ranked League of Legends game. Ranked games consist of two teams of five players that try to win by killing the opposing team's nexus. To learn more about League of Legends, &lt;a href="http://leagueoflegends.com" target="_blank"&gt;follow this link&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+    Predicting the winner for the game League of Legends is a difficult task. There are many aspects of the game that must be considered. Player skill level, champion strength and Internet connectivity issues are just a few examples. The most accurate predictor to date is the summed total of each team's players champion win rate.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Methods
+&lt;/h3&gt;
+
+&lt;h4&gt;
+    Introduction
+&lt;/h4&gt;
+
+&lt;p&gt;
+    Riot Games' League of Legends API was used to collect data for this analysis. The API provided endpoints for fetching player information, player match history and detailed match information. In addition, &lt;a href="http://www.cs.waikato.ac.nz/ml/weka/" target="_blank"&gt;Weka&lt;/a&gt; was used for data analysis and the creation of the predictive model. Several methods were used prior to the one discussed in this article, however they were left out for brevity.
+&lt;/p&gt;
+
+&lt;h4&gt;
+    Data Collection
+&lt;/h4&gt;
+
+&lt;p&gt;
+    Approximately 1,000 games from each League of Legends ranking system (bronze through challenger) was collected for training and testing the model. Data collection consisted of querying the API for players from each rank and finding that player's previous 20 matches. In some cases more data was collected than others. For example, there are significantly more players in the bronze tier than the challenger tier. 
+&lt;/p&gt;
+
+&lt;p&gt;
+    While querying the API for each match, several sub-API calls were made to obtain each player's win rate for that champion. Once each player's win rates were collected, the totals were summed for each team. In the event that a player has less than 10 games on that particular champion; a win rate of 50% was assigned. Each team's total win rate never exceeds 500 percent (5 players per team with a maximum of 100% win rate per player).
+&lt;/p&gt;
+
+&lt;p&gt;
+    A single entry would look like the following:
+&lt;/p&gt;
+
+&lt;table border="1" cellpadding="1" cellspacing="0"&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                &lt;strong&gt;BlueTeam&lt;/strong&gt;
+            &lt;/td&gt;
+            &lt;td&gt;
+                &lt;strong&gt;RedTeam&lt;/strong&gt;
+            &lt;/td&gt;
+            &lt;td&gt;
+                &lt;strong&gt;Winner&lt;/strong&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                385
+            &lt;/td&gt;
+            &lt;td&gt;
+                407
+            &lt;/td&gt;
+            &lt;td&gt;
+                red
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h4&gt;
+    Data Analysis
+&lt;/h4&gt;
+
+&lt;p&gt;
+    Initially, the data analysis process consisted of training and testing the model from the higher ranked match data (masters and challenger) using Weka. A number of different algorithms were used in the model: decision trees, baysian network and rule based. After testing all of the different models, the J48 decision tree algorithm performed the best (with adjustments to pruning etc).
+&lt;/p&gt;
+
+&lt;p&gt;
+    Here are the J48 options used:
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code class="language-bash"&gt;weka.classifiers.trees.J48 -R -N 5 -Q 1 -B -M 2 -A&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+    With these options and using the challenger data set the model was able to successfully predict 90% of the games correctly. Testing the model against lower ranked matches showed that the model became more accurate when testing against lower tier data. For example, the master tier has an accuracy of 94% and the lowest tier (bronze) has an accuracy of 98%.
+&lt;/p&gt;
+
+&lt;h4&gt;
+    Predictive Model Implementation
+&lt;/h4&gt;
+
+&lt;p&gt;
+    The output from the Weka J48 decision tree algorithm was implemented in the Go programming language. You can see the full implementation below.
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code class="language-go"&gt;package classifiers
+
+/*
+=== Run information ===
+
+Scheme:weka.classifiers.trees.J48 -R -N 5 -Q 1 -B -M 2 -A
+Relation:     team_win_rates_masters2
+Instances:    3304
+Attributes:   3
+              BlueTeam
+              RedTeam
+              Win
+Test mode:user supplied test set:     641instances
+
+=== Classifier model (full training set) ===
+
+J48 pruned tree
+------------------
+
+RedTeam &amp;lt;= 285.871643
+|   BlueTeam &amp;lt;= 253.400162
+|   |   RedTeam &amp;lt;= 258.712128
+|   |   |   BlueTeam &amp;lt;= 229.873032: RedTeam (33.0/5.0)
+|   |   |   BlueTeam &amp;gt; 229.873032: BlueTeam (38.0/13.0)
+|   |   RedTeam &amp;gt; 258.712128: RedTeam (146.0/10.0)
+|   BlueTeam &amp;gt; 253.400162
+|   |   RedTeam &amp;lt;= 245.268372: BlueTeam (556.0/6.0)
+|   |   RedTeam &amp;gt; 245.268372
+|   |   |   BlueTeam &amp;lt;= 302.380981
+|   |   |   |   BlueTeam &amp;lt;= 265.680847: RedTeam (53.0/18.0)
+|   |   |   |   BlueTeam &amp;gt; 265.680847: BlueTeam (262.0/90.0)
+|   |   |   BlueTeam &amp;gt; 302.380981: BlueTeam (286.0/18.0)
+RedTeam &amp;gt; 285.871643
+|   BlueTeam &amp;lt;= 284.519928: RedTeam (954.0/50.0)
+|   BlueTeam &amp;gt; 284.519928
+|   |   RedTeam &amp;lt;= 316.890594: BlueTeam (196.0/62.0)
+|   |   RedTeam &amp;gt; 316.890594
+|   |   |   BlueTeam &amp;lt;= 324.080078: RedTeam (101.0/6.0)
+|   |   |   BlueTeam &amp;gt; 324.080078
+|   |   |   |   BlueTeam &amp;lt;= 344.303864
+|   |   |   |   |   RedTeam &amp;lt;= 330.416656: BlueTeam (7.0/2.0)
+|   |   |   |   |   RedTeam &amp;gt; 330.416656: RedTeam (7.0)
+|   |   |   |   BlueTeam &amp;gt; 344.303864: BlueTeam (5.0)
+
+Number of Leaves  :     13
+
+Size of the tree :  25
+
+
+Time taken to build model: 0.03 seconds
+
+=== Evaluation on test set ===
+=== Summary ===
+
+Correctly Classified Instances         603               94.0718 %
+Incorrectly Classified Instances        38                5.9282 %
+Kappa statistic                          0.8814
+Mean absolute error                      0.1043
+Root mean squared error                  0.2121
+Relative absolute error                 20.856  %
+Root relative squared error             42.3594 %
+Total Number of Instances              641
+
+=== Detailed Accuracy By Class ===
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.956     0.075      0.927     0.956     0.942      0.975    BlueTeam
+                 0.925     0.044      0.955     0.925     0.94       0.975    RedTeam
+Weighted Avg.    0.941     0.059      0.941     0.941     0.941      0.975
+
+=== Confusion Matrix ===
+
+   a   b   &amp;lt;-- classified as
+ 306  14 |   a = BlueTeam
+  24 297 |   b = RedTeam
+*/
+
+// This classifies which league of legends team will win based on the
+// summation of each player's specific champion win rate for their team.
+// This is the implementation of the J48 decision tree's output. Overall this
+// classifier has an accuracy of rougly 92%.
+// The output of this classifier is a string of "blue" or "red".
+func CWRWinningTeamClassifier(blueWinRate float64, redWinRate float64) string {
+    var winner string
+    if redWinRate &amp;lt;= 285.871643 {
+        if blueWinRate &amp;lt;= 253.400162 {
+            if redWinRate &amp;lt;= 258.712128 {
+                if blueWinRate &amp;lt;= 229.873032 {
+                    winner = "red"
+                } else {
+                    winner = "blue"
+                }
+            } else {
+                winner = "red"
+            }
+        } else {
+            if redWinRate &amp;lt;= 245.268372 {
+                winner = "blue"
+            } else {
+                if blueWinRate &amp;lt;= 302.380981 {
+                    if blueWinRate &amp;lt;= 265.680847 {
+                        winner = "red"
+                    } else {
+                        winner = "blue"
+                    }
+                } else {
+                    winner = "blue"
+                }
+            }
+        }
+    } else {
+        if blueWinRate &amp;lt;= 284.519928 {
+            winner = "red"
+        } else {
+            if redWinRate &amp;lt;= 316.890594 {
+                winner = "blue"
+            } else {
+                if blueWinRate &amp;lt;= 324.080078 {
+                    winner = "red"
+                } else {
+                    if blueWinRate &amp;lt;= 344.303864 {
+                        if redWinRate &amp;lt;= 330.416656 {
+                            winner = "blue"
+                        } else {
+                            winner = "red"
+                        }
+                    } else {
+                        winner = "blue"
+                    }
+                }
+            }
+        }
+    }
+    return winner
+}&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;
+    Conclusion
+&lt;/h3&gt;
+
+&lt;p&gt;
+    In conclusion, the best predictor for determining the winner of ranked League of Legends games seems to be the champion win rate. Using the model at any rank gives a very accurate prediction of 90% to 98%. If you are interested in using this implementation, then please visit &lt;a href="http://loldestiny.tylermarrs.com" target="_blank"&gt;loldestiny.tylermarrs.com&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>data analytics</category><category>data science</category><category>league of legends</category><category>predictive modeling</category><guid>http://tylermarrs.com/posts/ranked-win-predictor/</guid><pubDate>Mon, 04 Jul 2016 02:26:22 GMT</pubDate></item></channel></rss>

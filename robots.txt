@@ -1,0 +1,4 @@
+Sitemap: http://tylermarrs.com/sitemapindex.xml
+
+User-Agent: *
+Host: tylermarrs.com

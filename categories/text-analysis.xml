@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about text analysis)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/text-analysis.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Lyric Analysis of an Artist</title><link>http://tylermarrs.com/posts/lyric-analysis-of-an-artist/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h2&gt;
+    Introduction
+&lt;/h2&gt;
+&lt;p&gt;
+    This is a follow up post to the lyric analysis performed for the &lt;a href="http://tylermarrs.com/billboard-hot-100-lyric-analysis/"&gt;Billboard Hot 100 songs lyric analysis&lt;/a&gt; (referred to as - Billboard analysis). Within the Billboard analysis, I attempted to find trends within the lyrics that may influence why a particular song is popular. However, I did not find anything of interest. After no trends were found in the Billboard analysis, I wondered what I could find by analyzing every song performed by an artist. There is no particular trend of interest that I tried to find within an artist. This is purely an exploratory endeavor. All of the code associated with this pipeline can be found at the following &lt;a href="https://github.com/tylerwmarrs/single-artist-lyric-analysis" target="_blank"&gt;Github repository&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;u&gt;&lt;strong&gt;Please take caution while reading this blog post. Some offensive language is used for analysis purposes.&lt;/strong&gt;&lt;/u&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;
+    Methods
+&lt;/h2&gt;
+
+&lt;p&gt;
+    In this section you will find the methods used to collect, cleanse, process and visualize the data. The image below represents the tasks associated with the entire data pipeline. It is a DAG (directed acyclic graph) of every task in the pipeline (created with &lt;a href="https://github.com/spotify/luigi" target="_blank"&gt;Luigi&lt;/a&gt;).
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-208 aligncenter" height="356" src="http://tylermarrs.com/wp-content/uploads/2017/03/dependency_graph.png" style="" title="" width="571"&gt;
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;em&gt;Figure 1. &lt;/em&gt;Data pipeline
+&lt;/p&gt;
+
+&lt;p&gt;
+    The data pipeline takes an artist and an output directory as input. It then goes through the process of extracting lyrics, cleaning the lyrics, processing the lyrics and finally generating some visualizations. These processes are explained in further detail below.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Data Collection
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The data collection process first searches for the artist provided as input on the site AZLyrics.com. If an artist shows in the search results, the pipeline further scrapes the website to obtain all songs available. These tasks, ObtainArtistUrl, FetchArtistSongs and FetchLyrics, are all performed using the &lt;a href="https://pypi.python.org/pypi/requests/2.13.0" target="_blank"&gt;Requests&lt;/a&gt; and &lt;a href="https://pypi.python.org/pypi/lxml/3.7.2" target="_blank"&gt;LXML&lt;/a&gt; libraries available in the Python language. Prior to web scraping, the pipeline creates a directory structure in the CreateDirectories task to store data, plots and reports in a tidy fashion within the specified output directory. Similar to the Billboard analysis, the swear word list from no-swearing.com is used to look for curse words throughout the text.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Data Cleansing
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Preparation of the lyrics files consisted of removing unwanted text within the files. Many of the files contained labels in brackets to mark the chorus and other constructs of a song. These were removed from the files. Additionally, some lyrics files had a line that consisted of "Produced by…" which was removed. All data cleansing techniques used regular expressions in the Python programming language. Prior to this data cleansing step, raw data analysis was performed to determine what was causing "dirty results".
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Text Processing and Visualization
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The Python language and the following libraries were used to process and visualize the text: &lt;a href="http://www.nltk.org/" target="_blank"&gt;NLTK&lt;/a&gt;, &lt;a href="http://pandas.pydata.org/" target="_blank"&gt;Pandas&lt;/a&gt;, &lt;a href="http://matplotlib.org/" target="_blank"&gt;Matplotlib&lt;/a&gt; and &lt;a href="http://scikit-learn.org/stable/documentation.html" target="_blank"&gt;Scikit-learn&lt;/a&gt;. NLTK is a natural language processing tool kit that provides convenience functions for common tasks such as tokenization and sentiment analysis. The Pandas library is a tool that provides common data analysis features. It enables you to easily perform aggregations, obtain descriptive statistics and plot data by wrapping convenience methods from other libraries. When Pandas didn't provide the exact plotting styles that I wanted out of the box, I used Matplotlib functionality to add styling to the plots. Scikit-learn was used to extract TF-IDFs (term frequency–inverse document frequency) and to perform topic modeling. &lt;a href="https://en.wikipedia.org/wiki/Tf%E2%80%93idf" target="_blank"&gt;TF-IDF&lt;/a&gt; is essentially a statistical measure of how important a word is within a given document. &lt;a href="https://en.wikipedia.org/wiki/Topic_model" target="_blank"&gt;Topic modeling&lt;/a&gt; is a method that tries to find semantic meanings within a set of given text. In this analysis we use two different topic modeling algorithms; &lt;a href="https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation" target="_blank"&gt;LDA&lt;/a&gt; and &lt;a href="https://en.wikipedia.org/wiki/Non-negative_matrix_factorization" target="_blank"&gt;NMF&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;h2&gt;
+    Analysis
+&lt;/h2&gt;
+
+&lt;p&gt;
+    In this section we look at the output of the data pipeline for the artists Twenty One Pilots and Eminem. These two artists were chosen to illustrate potential insights that can be gained from artists. Additionally, these two artists come from two different genres; pop and rap.
+&lt;/p&gt;
+
+&lt;p&gt;
+    Many of these techniques have already been explained in the Billboard analysis and are left out for brevity. I encourage you to read that blog post to learn more about the techniques.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Word Frequency
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The word frequency represents the most common words found throughout all of the lyrics. It is normalized by the number of words in each document and the total number of songs observed. Comparing the artists below, we can see that Eminem has a tendency to swear a lot while Twenty One Pilots does not.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-218" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/word_frequency_plot_twentyone_pilots.png" style="" title="" width="480"&gt;&lt;img alt="" class="alignnone size-full wp-image-219" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/word_frequency_plot_eminem.png" style="" title="" width="480"&gt;
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Swear Word Frequency
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The swear word frequency is a measure of the number of curse words found throughout the lyrics. It is similar to the word frequency with the exception of curse words being targeted. The plots below only show the top 5 curse words found throughout the lyrics. It is pretty clear that Eminem curses quite a bit in his songs. The F-word shows up around 1.4% of the time. However, Twenty One Pilots only appears to curse very minimally with roughly 0.032% of the word "muff".
+&lt;/p&gt;
+
+&lt;p&gt;
+    While we are only looking at the frequency of individual swear words, one might be interested in an overall frequency. For the purposes of this analysis it has been left out, but it could easily be calculated.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-236" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/swearword_frequency_plot_twentyone_pilots2.png" style="" title="" width="480"&gt;&lt;img alt="" class="alignnone size-full wp-image-223" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/swearword_frequency_plot_eminem.png" style="" title="" width="480"&gt;
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Repetitiveness
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The repetitiveness is a measure of how many repetitions a particular phrase occurs. A threshold of 2 occurrences must be met in order for it to be considered repetitive. The actual calculation can be read within the Billboard analysis. The plots below show that Twenty One Pilots has a very high average repetition rate of 52% while Eminem has a much lower average rate of 7%.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-224" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/repetitiveness_plot_twentyone_pilots.png" style="" title="" width="480"&gt;&lt;img alt="" class="alignnone size-full wp-image-225" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/repetitiveness_plot_eminem.png" style="" title="" width="480"&gt;
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Sentiment
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The sentiment algorithm used is Vader within the NLTK library. It is a rule based algorithm trained from Twitter data. The Twenty One Pilots plot shows that their songs consist of both positive and negative sentiments while Eminem's lyrics have a higher negative sentiment.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-239" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/sentiment_plot_twentyone_pilots.png" style="" title="" width="480"&gt;&lt;img alt="" class="alignnone size-full wp-image-240" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/sentiment_plot_eminem.png" style="" title="" width="480"&gt;
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Song Statistics
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The song statistics simply plots the repetitiveness, positive sentiment and negative sentiment per song.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-226" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/song_statistics_plot_twentyone_pilots.png" style="" title="" width="480"&gt;&lt;img alt="" class="alignnone size-full wp-image-227" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/song_statistics_plot_eminem.png" style="" title="" width="480"&gt;
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Album Statistics
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The album statistics plots the repetitiveness, positive sentiment and negative sentiment per song. It is interesting that Twenty One Pilots highest repetitive album is Blurryface at a whopping 68%. The most repetitive album from Eminem is Straight From The Vault at around 23%.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-228" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/album_statistics_plot_twentyone_pilots.png" style="" title="" width="480"&gt;&lt;img alt="" class="alignnone size-full wp-image-229" height="330" src="http://tylermarrs.com/wp-content/uploads/2017/03/album_statistics_plot_eminem.png" style="" title="" width="480"&gt;
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Topic Modeling
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The topic models shown below (one topic per line) is not very human friendly, however it makes sense to the computer. You can decipher a little bit of information from reading the topics. To build these topic models I used Sklearn. It extracted Ngrams from 1 to 2 N using the TfidfVectorizer within Sklearn and was fed into the algorithms. Essentially the vectorizer provides you with a list of features (Ngrams) and their inverse document frequency.
+&lt;/p&gt;
+
+&lt;p&gt;
+    You can see that LDA and NMF give different results. LDA is typically used in documents where there are semantic units within the text while NMF is used for non-word based documents such as images.
+&lt;/p&gt;
+
+&lt;h4&gt;
+    LDA
+&lt;/h4&gt;
+
+&lt;p&gt;
+    &lt;strong&gt;Twenty One Pilots Topics&lt;/strong&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;na na na ll tell reign
+da hey hey hey trying trying trying
+bah re broken bah bah broken doo
+fall don heart won watch
+save re alive stay alive eh eh&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+    &lt;strong&gt;Eminem Topics&lt;/strong&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;don cause shit fuck re
+daddy phenomenal wanna love alright am phenomenal
+paul rape don fuckin kidding ummm listened dead gay
+yo requested intent checking week sayin called ok retilin goes
+iâ canâ fucking kidding whatâ ish&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4&gt;
+    NMF
+&lt;/h4&gt;
+
+&lt;p&gt;
+    &lt;strong&gt;Twenty One Pilots Topics&lt;/strong&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;tell ll tell plans ll tell plans
+na na na hello hello hello silent trees
+hey hey hey trying trying trying trying sleep
+sit sit silence silence car radio sit
+play pretend pretend wish stressed re stressed&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+    &lt;strong&gt;Eminem Topics&lt;/strong&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;don cause shit fuck re
+name name name huh hi yeah yeah
+paul ummm listened paul ummm incest incest rape
+woah alright drug woah woah steve
+daddy mommy rejoice carry don voice looking&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;
+    Conclusion
+&lt;/h2&gt;
+
+&lt;p&gt;
+    Building this data pipeline has proved to provide me with useful information about a particular artist without actually listening to any of their songs. One could use some of these techniques to identify music suited for a particular age or culture. For example, you may not want your kid to listen to songs with a high rate of swearing or negativity. Creating this type of intuition about a particular artist may enable individuals to quickly compare several artists at once with some adjustments to the pipeline. Some unsupervised clustering could be used in conjunction with the topic models to find similar artists based on lyrics.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>data analytics</category><category>data mining</category><category>matplotlib</category><category>nlp</category><category>pandas</category><category>python</category><category>text analysis</category><guid>http://tylermarrs.com/posts/lyric-analysis-of-an-artist/</guid><pubDate>Mon, 13 Mar 2017 09:11:00 GMT</pubDate></item><item><title>Billboard Hot 100 Lyric Analysis</title><link>http://tylermarrs.com/posts/billboard-hot-100-lyric-analysis/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h2&gt;
+    Introduction
+&lt;/h2&gt;
+&lt;p&gt;
+    The Billboard Hot 100, from &lt;a href="http://billboard.com" target="_blank"&gt;billboard.com&lt;/a&gt;, is a list of rankings for the most popular 100 songs of a given week. The website claims to establish their rankings by "...fan interactions with music, including album sales and downloads, track downloads, radio airplay and touring as well as streaming and social interactions on Facebook, Twitter, Vevo, Youtube, Spotify and other popular online destinations for music." (billboard.com, 2017).
+&lt;/p&gt;
+
+&lt;p&gt;
+    In this analysis the goal is to see if any trends appear within the song's lyrics through text analysis. This project was created purely out of personal interest to see if any lyrical patterns exist between popular songs. All of the code and data used during this analysis can be viewed at the following &lt;a href="https://github.com/tylerwmarrs/billboard-hot-100-lyric-analysis" target="_blank"&gt;GitHub repository&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;u&gt;&lt;strong&gt;Please take caution while reading this blog post. Some offensive language is used for analysis purposes.&lt;/strong&gt;&lt;/u&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;
+    Methods
+&lt;/h2&gt;
+
+&lt;p&gt;
+    In this section we explore the methods and tools used to extract data from sources, clean the data and analyze the text.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Data Collection
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The first task at hand was to determine which data sources provided the song list and the lyrics. Thankfully, billboard.com provided an RSS feed that could easily be parsed to process the top 100 songs for a given week while obtaining the lyrics was much more difficult. To parse the RSS feed, I used the Python programming language and the software libraries: &lt;a href="https://pypi.python.org/pypi/lxml/3.7.2" target="_blank"&gt;LXML&lt;/a&gt; and &lt;a href="https://pypi.python.org/pypi/requests/2.13.0" target="_blank"&gt;Requests&lt;/a&gt;. LXML provides functionality to process DOM elements on web pages (HTML and XML). The Requests library enables you to create HTTP requests to obtain web content. 
+&lt;/p&gt;
+
+&lt;p&gt;
+    The billboard.com RSS feed was obtained by making a GET request with the Request's library and further parsed using LXML. For every song in the RSS feed, the artist, title, rank this week, rank last week was collected. During the iteration of each RSS entry, a request to a lyric site was made to obtain the lyrics (discussed below). Once processed, a comma-delimited file was created to save the song entries. A simple illustration of this process is shown below.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-172" height="252" src="http://tylermarrs.com/wp-content/uploads/2017/02/lyrics-collection-workflow-2.png" width="712"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    Searching for websites that provided lyrics was the longest process in this whole project. There are several lyrics websites available, however many of them are community driven and do not always have every song's lyrics at hand. That created a challenge in creating a good combination of many different web sources to obtain lyrics from. &lt;a href="http://azlyrics.com" target="_blank"&gt;AZLyrics.com&lt;/a&gt;, &lt;a href="http://songlyrics.com" target="_blank"&gt;SongLyrics.com&lt;/a&gt; and &lt;a href="http://lyricsfreak.com" target="_blank"&gt;LyricsFreak.com&lt;/a&gt; were all used to obtain lyrics. The process consisted of using the Requests and LXML libraries in the Python programming language. Essentially, the script would create a search request on each site until it found lyrics it was looking for. Once the lyrics were found it would extract them from the web page and save them to a text file. If one website did not have the lyrics, it would try the next one. If none of the sites contained the lyrics, it would raise an error. In the case of an error, manual web searching is required to obtain the lyrics. To create the file name for the lyrics file, I used the Python library &lt;a href="https://pypi.python.org/pypi/unicode-slugify/0.1.3" target="_blank"&gt;unicode-sluggify&lt;/a&gt;.This library "sluggifies" the provided text replacing spaces with dashes and other symbols accordingly. It is normally used in creating "pretty" URLs.
+&lt;/p&gt;
+
+&lt;p&gt;
+    In addition to the top songs and lyrics, I collected a set of swear words from &lt;a href="http://noswearing.com" target="_blank"&gt;noswearing.com&lt;/a&gt;. NoSwearing.com provides a list of swear words that are both common and uncommon. To extract these swear words I used the same libraries (Requests and LXML) to scrape data from the website. The website is laid out with all swear words separated alphabetically on their own web page. The script used to scrape the words iterated through the alphabet constructing the URL accordingly and fetched the swear words saving them to a text file.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Data Cleansing
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Preparation of the lyrics files consisted of removing unwanted text within the files. Many of the files contained labels in brackets to mark the chorus and other constructs of a song. These were removed from the files. Additionally, some lyrics files had a line that consisted of "Produced by..." which was removed. All data cleansing techniques used regular expressions in the Python programming language. Prior to this data cleansing step, raw data analysis was performed to determine what was causing "dirty results".
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Text Processing and Visualization
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The Python language and the following libraries were used to process and visualize the text: &lt;a href="http://www.nltk.org/" target="_blank"&gt;NLTK&lt;/a&gt;, &lt;a href="http://pandas.pydata.org/" target="_blank"&gt;Pandas&lt;/a&gt; and &lt;a href="http://matplotlib.org/" target="_blank"&gt;Matplotlib&lt;/a&gt;. NLTK is a natural language processing tool kit that provides convenience functions for common tasks such as tokenization and sentiment analysis. The Pandas library is a tool that provides common data analysis features. It enables you to easily perform aggregations, obtain descriptive statistics and plot data by wrapping convenience methods from other libraries. When Pandas didn't provide the exact plotting styles that I wanted out of the box, I used Matplotlib functionality to add styling to the plots.
+&lt;/p&gt;
+
+&lt;h2&gt;
+    Analysis
+&lt;/h2&gt;
+
+&lt;p&gt;
+    In this section you will find the different analyses performed on the lyrics.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Word Frequency
+&lt;/h3&gt;
+
+&lt;p&gt;
+    One of the first analyses performed was to determine the frequency of words throughout the lyrics. This process was performed by tokenizing each of the words with NLTK, removing the stop words, stemming words with PorterStemmer, collecting word frequencies per lyrics file and normalizing the word frequency. Normalization was performed by treating each set of lyrics individually and collecting the frequency that each word showed up in the lyrics file individually. Once a frequency was obtained for each set of lyrics, a global frequency was calculated by combining all local frequencies and dividng by 100 (the number of songs). This method essentially treats every lyrics file as a "bag of words instead of all lyrics text combined as a "bag of words".
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-159 aligncenter" height="268" src="http://tylermarrs.com/wp-content/uploads/2017/02/word_frequency_normalized.png" style="" title="" width="362"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The bar chart above shows some of the common words used throughout the songs. The Y-axis is the frequency in a decimal percentage while the X-axis displays the words. So the word "love" shows up 1.5% of the time in all of the songs. Looking at the word frequencies could give you a general idea that "love" is a fairly popular topic in this set of songs.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Swear Words
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The next analysis performed was to look at how frequent swear words occurred in the songs. The same process used to obtain the word frequency was used to calculate the swear word frequency with one additional step - filtering the words of interest. 
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-156 aligncenter" height="269" src="http://tylermarrs.com/wp-content/uploads/2017/02/swear_word_frequency_normalized_stemmed.png" style="" title="" width="362"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    As illustrated in the plot, there is a very low frequency of swear words found throughout these songs. The most frequent swear word has a frequency of 0.7%. I imagine this is due to the nature of how billboard.com collects their information to create their list or songs with many swear words just are not as popular. Speculation aside, this would require more analysis and data collection on this specific topic to reliably determine the case.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    N-Grams
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Similar to looking at common words in the songs, I looked for common N-Grams. An N-Gram is a contiguous set of text. In this case our N-Grams represent a number of words.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-148 aligncenter" height="383" src="http://tylermarrs.com/wp-content/uploads/2017/02/common_trigrams.png" style="" title="" width="353"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The plot above shows the top TriGrams with their frequency.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-147 aligncenter" height="317" src="http://tylermarrs.com/wp-content/uploads/2017/02/common_bigrams.png" style="" title="" width="353"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The plot above shows the top BiGrams with their frequency. You might notice that there isn't a big difference between looking at TriGrams versus BiGrams. The majority of the same results show as the top. 
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Sentiments
+&lt;/h3&gt;
+
+&lt;p&gt;
+    To gain insight into the general sentiment of these popular songs, the &lt;a href="https://github.com/cjhutto/vaderSentiment" target="_blank"&gt;Vader sentiment analysis algorithm&lt;/a&gt; was used. This algorithm is a rule-based algorithm that was trained with Twitter data. It provides a good solution to handling slang and emoticons that isn't always seen in most algorithms. Another approach, given that I collectd more data, would be to create my own sentiment analysis tool using a NaiveBayes model. However, for this particular problem I felt that Vader would suffice. This is primarily due to no known source of lyrics with labeled sentiments.
+&lt;/p&gt;
+
+&lt;p&gt;
+    I used the Vader algorithm on each individual line in a given lyrics file. The output of the algorithm is a probability score of neutrality, positivity and negativity. To obtain the sentiment for an entire song, each line was processed and the sum of each probability was gathered. Once all lines were processed, a normalized score was obtained by dividing by the total number of lines analyzed in the lyrics file. To obtain a global sentiment for all of the songs in the set, each song's sentimet scores were summed and divided by the total number of songs analyzed (100).
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-154 aligncenter" height="281" src="http://tylermarrs.com/wp-content/uploads/2017/02/sentiment_distribution.png" style="" title="" width="350"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    In this plot you can see that the songs are generally scored as neutral, however there is a 2-3% difference between positive and negative sentiments. I imagine that the sentiment analysis tool, Vader, is most likely not optimal for lyric analysis. Experimentation with other algorithms would need to be explored to determine if a better solution is available.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Repetitiveness
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Have you ever listened to a song that seemed as if it was saying the same thing over and over again? Typically these songs become "stuck in your head" so I wanted to measure how repetitive a given song is. A custom algorithm was used to measure repetitiveness. Essentially, all unique phrases (each individual line) was obtained for each lyric file and a frequency for each phrase was calculated. All unique phrases that had 2 or more repetitions was summed together and divided by the total number of phrases in the file. The result is a percentage of repetitive lines.
+&lt;/p&gt;
+
+&lt;p&gt;
+    A different approach for measuring repetitiveness would be at the word level. However, some songs use words in different phrases that may not sound repetitive. Either approach would work, however I felt that measuring at the phrase level made more sense. 
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-181 aligncenter" height="466" src="http://tylermarrs.com/wp-content/uploads/2017/02/repetitiveness.png" style="" title="" width="925"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The plot above shows the percentage of repetitions found in each song. The songs from left to right are ordered by the 1st rank for the week to the 100th rank. You can also see that generally a lot of these songs are pretty repetitive with a median of nearly 58%. Althougth these songs may seem very repetitive, more data would need to be analyzed to get a better median and mean repetition percentage. In other words, it is difficult to say that these songs are very repetitive when we do not know how repetitive most songs are.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Correlations
+&lt;/h3&gt;
+
+&lt;p&gt;
+    I looked for trends between sentiments, current rank and repetitiveness. However, no strong correlations were found. The Pearson correlation was used to identify any potential correlations. Pandas provides a simple way to obtain all correlations in a table format between all numerical values. For illustration, I included some scatter plots.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-188" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/Repetitiveness_and_neg_sent.png" style="" title="" width="273"&gt; &lt;img alt="" class="alignnone size-full wp-image-189" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/Repetitiveness_and_pos_sent.png" style="" title="" width="273"&gt; &lt;img alt="" class="alignnone size-full wp-image-190" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/pos_sent_current_rank.png" style="" title="" width="273"&gt; &lt;img alt="" class="alignnone size-full wp-image-191" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/neg_sent_current_rank.png" style="" title="" width="273"&gt; &lt;img alt="" class="alignnone size-full wp-image-192" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/Repetitiveness_and_rank.png" style="" title="" width="272"&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;
+    Conclusion
+&lt;/h2&gt;
+
+&lt;p&gt;
+    While no correlations were found within the lyrics, many useful techniques and insights were gained in our analysis. We found that within our samples swearing is fairly limited with less than a 1% frequency, songs contain generally neutral sentiment with similar measures of positivity and negativity and that there appears to be a fairly high number of repititions in songs. 
+&lt;/p&gt;
+
+&lt;p&gt;
+    Some things to take note of is that all of these songs come from different genres and artists which makes finding trends more difficult. Also, it may not only be lyrics that make a song popular.
+&lt;/p&gt;
+
+&lt;p&gt;
+    Here is a list of further analysis topics that could be interesting:
+&lt;/p&gt;
+
+&lt;ul&gt;
+    &lt;li&gt;
+        Temporal analysis of Billboard Hot 100 songs across a year's period.
+    &lt;/li&gt;
+    &lt;li&gt;
+        All songs for a particular artist.
+    &lt;/li&gt;
+    &lt;li&gt;
+        Many songs from a particular genre.
+    &lt;/li&gt;
+    &lt;li&gt;
+        Many songs from multiple genres treated as separate cohorts.
+    &lt;/li&gt;
+    &lt;li&gt;
+        Improve sentiment analysis by training our own model. This would be very complicated with no labels.
+    &lt;/li&gt;
+    &lt;li&gt;
+        Combine a songs audio and lyrics to perform a similar analysis.
+    &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>data analytics</category><category>data mining</category><category>matplotlib</category><category>nlp</category><category>nltk</category><category>pandas</category><category>python</category><category>text analysis</category><guid>http://tylermarrs.com/posts/billboard-hot-100-lyric-analysis/</guid><pubDate>Fri, 17 Feb 2017 22:15:23 GMT</pubDate></item></channel></rss>

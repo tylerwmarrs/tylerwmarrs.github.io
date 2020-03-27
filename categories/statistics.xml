@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about statistics)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/statistics.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Naming A Baby Part 2</title><link>http://tylermarrs.com/posts/naming-a-baby-part-2/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Introduction"&gt;Introduction&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-2/#Introduction"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In &lt;a href="http://tylermarrs.com/posts/naming-a-baby-part-1/"&gt;part 1&lt;/a&gt; of this series, I introduced a personal conundrum, how can I simplify naming a baby? In this blog post I will discuss how I created clusters of names based on features and sampled them using statistical methods. You do not need a heavy background in statistics or machine learning to follow along.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Choosing-Features"&gt;Choosing Features&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-2/#Choosing-Features"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In order to perform clustering, I needed to identify common traits within names that people consider. When you really start thinking about what you like in a name, it becomes apparent that there is much to consider. Here is a list of features that I derived from names:&lt;/p&gt;
+&lt;p&gt;Sample name &lt;strong&gt;Garen&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;1. Percentage of males in the population with this name - 100%&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The database of names gives the frequency of individuals with the name since 1880 by both male and female. I simplified it and combined all years into one value. Using the name Garen as an example, you can see that there hasn't been a female with that name on record.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2. Percentage of females in the population with this name - 0%&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;I used the same logic to compute the percentage of females. Garen was never recorded as a female given name.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;3. Percentage of the population with the name&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Here I combined the male and female frequency into one value to obtain the popularity of the name.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;4. First letter - G&lt;/strong&gt;&lt;br&gt;
+&lt;strong&gt;5. First two letters - Ga&lt;/strong&gt;&lt;br&gt;
+&lt;strong&gt;6. First three letters - Gar&lt;/strong&gt;&lt;br&gt;
+&lt;strong&gt;7. Last letter - n&lt;/strong&gt;&lt;br&gt;
+&lt;strong&gt;8. Last two letters - en&lt;/strong&gt;&lt;br&gt;
+&lt;strong&gt;9. Last three letters - ren&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The beginning and ending letters of a name is pretty easy to obtain by simple string slicing.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;10. How to pronounce the name - KRN&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;I use metaphone to generate this information. It generates a string that creates a sound value. Similar to the name Garen, Karen sounds similar and has the same code of KRN.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;11. Number of letters in the name - 5&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Here I simply count the number of letters in the name.&lt;/p&gt;
+&lt;h3 id="Putting-It-All-Together"&gt;Putting It All Together&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-2/#Putting-It-All-Together"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Using the same sample name, Garen, here is what all of the features would look like that is fed into the clustering algorithm.&lt;/p&gt;
+&lt;div style="float:left"&gt;
+&lt;table&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Feature&lt;/th&gt;
+            &lt;th&gt;Value&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;% Male&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;% Female&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;% Population&lt;/td&gt;
+&lt;td&gt;0.000232&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;First letter&lt;/td&gt;
+&lt;td&gt;g&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;First two letters&lt;/td&gt;
+&lt;td&gt;ga&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;First three letters&lt;/td&gt;
+&lt;td&gt;gar&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Last letter&lt;/td&gt;
+&lt;td&gt;n&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Last two letters&lt;/td&gt;
+&lt;td&gt;en&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Last three letters&lt;/td&gt;
+&lt;td&gt;ren&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Metaphone&lt;/td&gt;
+&lt;td&gt;krn&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Length&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Clustering-Similar-Names"&gt;Clustering Similar Names&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-2/#Clustering-Similar-Names"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;For clustering, I used the &lt;a href="https://scikit-learn.org/stable/modules/neighbors.html"&gt;NearestNeighbors algorithm from scikit-learn&lt;/a&gt;. It provides a supervised and unsupervised approach to clustering. In this case, for baby name recommendation, I set the minimum number of neighbors to 20 and used the automatic algorithm. Once clustering was finished I created a dictionary of similar names.&lt;/p&gt;
+&lt;p&gt;For example, looking up names similar to Ladon would give us:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'Ladell'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Lacy'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Little'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Lorenza'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Lorren'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Mikell'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Mikal'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Laren'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Lorin'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Laray'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Mika'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Loren'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Larrie'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Loran'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Lindsey'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Lindsay'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Micah'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Micky'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Lester'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+ &lt;span class="s1"&gt;'Mica'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;I use the similar names to recommend a name that you may like based on previous likes. The similar names were stored in a Python pickle file and loaded for suggestions while the features of all of the names were stored in a database. The database essentially keeps track of what you like and dislike. This leads us to the more complicated part of the application; sampling.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Sampling-and-Suggesting-Names"&gt;Sampling and Suggesting Names&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-2/#Sampling-and-Suggesting-Names"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;img src="http://tylermarrs.com/images/baby_name_stratified_sampling.png" alt="alt text" title="Stratified Sampling"&gt;&lt;/p&gt;
+&lt;p&gt;For sampling, I came up with three strata (groups) with biased weights. These weights are used to compute which group should be sampled from. The weights are multiplied by the number of names that have been liked with a hard cut-off of 10 for the partner and user strata. So if you liked 10 names, the liklihood that it would select a name similar to one that was liked is (liked / total names) &lt;em&gt; user_bias; (10 / 10,832) &lt;/em&gt; 0.45. The weights were all calculated this way and normalized from 0 to 1. Once a strata is chosen, I simply selected a name from the cluster group.&lt;/p&gt;
+&lt;p&gt;To reduce the number of times that you see a name when you dislike it, I added a hard cut-off of two. Essentially, if you did not like a name two or more times, it will never be shown again. This added some necessary logic to check the name that was sampled prior to displaying it. The logic is as follows:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Compute the biased weights to choose which strata to sample from.&lt;/li&gt;
+&lt;li&gt;Sample a name from the given strata.&lt;/li&gt;
+&lt;li&gt;If the name is disliked two times or more, repeat steps 1 through 3.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Summary"&gt;Summary&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-2/#Summary"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In this post, I illustrated how I created features that were used to cluster names into similar groups. I further illustrated how I used a biased stratified sampling approach to choose a name to show to the user. In the next part of this series I will show you the application and make it freely available.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>clustering</category><category>feature engineering</category><category>sampling</category><category>statistics</category><category>stratification</category><guid>http://tylermarrs.com/posts/naming-a-baby-part-2/</guid><pubDate>Fri, 31 May 2019 05:00:00 GMT</pubDate></item><item><title>Naming A Baby Part 1</title><link>http://tylermarrs.com/posts/naming-a-baby-part-1/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Introduction"&gt;Introduction&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-1/#Introduction"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Last year my wife and I had a child, Garen Jay Marrs. Finding a name for him was an interesting task due to my wife having difficulties in picking names. Our first pet together, a cat, did not have a name for around 2 months.&lt;/p&gt;
+&lt;p&gt;I spent quite a bit of time researching different apps available, but they did not seem to do what I wanted. Generally the apps only offered going through a list of names and liking or disliking them. As a data scientist, I was hoping to find an app that would suggest names as you provided feedback on which names you like and dislike. None of the apps that I reviewed had this capability so I decided to create my own.&lt;/p&gt;
+&lt;p&gt;This post is the starting point of a short blog series that describes how I created my ideal baby naming application. It will cover both high and low level details of how it works and my reasoning behind the functionality. At the end of this blog series, the application will be freely available.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="What-Is-In-A-Name?"&gt;What Is In A Name?&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-1/#What-Is-In-A-Name?"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;When choosing a name, most of us try to sound out the name and just create a list of what we like. However, when you look at it from an analytical eye, you see patterns in the names. Some features that my wife and I found important when choosing a name for our son included:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The letter it starts with&lt;/li&gt;
+&lt;li&gt;2 - 3 letters that the name starts with&lt;/li&gt;
+&lt;li&gt;2 - 3 letters that the name ends with&lt;/li&gt;
+&lt;li&gt;What it sounds like when pronounced&lt;/li&gt;
+&lt;li&gt;Percentage of the population that have the name as male or female&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Dataset"&gt;Dataset&lt;a class="anchor-link" href="http://tylermarrs.com/posts/naming-a-baby-part-1/#Dataset"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;The dataset that I used is from the Social Security Administration. They provide various statistics (percent male and female) over a period of time for names. This was a great set of names consisting of around 10,000 names. Unfortunately, it does not include a good mix of various ethnicities; Arabic, Chinese and Indian to name a few. For our case this was not an issue.&lt;/p&gt;
+&lt;p&gt;You can learn more about the data offered here:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://www.ssa.gov/OACT/babynames/" target="_blank"&gt;https://www.ssa.gov/OACT/babynames/&lt;/a&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>clustering</category><category>feature engineering</category><category>sampling</category><category>statistics</category><guid>http://tylermarrs.com/posts/naming-a-baby-part-1/</guid><pubDate>Tue, 19 Feb 2019 06:00:00 GMT</pubDate></item><item><title>Interpreting Correlations</title><link>http://tylermarrs.com/posts/interpreting-correlations/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;This is a blog post that illustrates how to interpret different correlations. I have needed to explain this to many people and thought that it would be useful for others. Here is an embeded IPython notebook with explanation.&lt;/p&gt;
+&lt;iframe src="http://tylermarrs.com/ipython/Interpreting%20Correlations.html" style="width:100%;height:700px"&gt;&lt;/iframe&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>data analysis</category><category>data analytics</category><category>statistic</category><category>statistics</category><guid>http://tylermarrs.com/posts/interpreting-correlations/</guid><pubDate>Mon, 01 May 2017 03:16:44 GMT</pubDate></item><item><title>Quick Stats - Descriptive Statistics Part 4 - Application of Mean, Median and Mode</title><link>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-4-application-of-mean-median-and-mode/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;
+    Introduction
+&lt;/h3&gt;
+&lt;p&gt;
+    In the fourth part of our descriptive statistics series we will look at a real world application of the mean, median and mode. If you are unfamiliar with these concepts, please read parts 1, 2 and 3 of this blog series.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-1-mean/" target="_blank"&gt;Quick Stats – Descriptive Statistics Part 1 – Mean&lt;/a&gt;&lt;br&gt;
+    &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-2-median/" target="_blank"&gt;Quick Stats – Descriptive Statistics Part 2 – Median&lt;/a&gt;&lt;br&gt;
+    &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-3-mode/" target="_blank"&gt;Quick Stats – Descriptive Statistics Part 3 – Mode&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Customer Ratings
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Customer rating systems are used within ecommerce all of the time. They provide useful insights to customers on which items they would like to purpose. Imagine visiting Amazon.com. Typically you will try to find items that meet a particular price range and have good customer reviews.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-136" height="215" src="http://tylermarrs.com/wp-content/uploads/2017/01/customer_reviews_sample.png" width="254"&gt;
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;em&gt;&lt;strong&gt;Image courtesy of Amazon.com&lt;/strong&gt;&lt;/em&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The ratings are typically broken up into a 1 to 5 star system. Providing 1 star is the worst rating and providing 5 stars is the best rating. These ratings are broken up into a frequency table illustrating the number of ratings given. Additionally, we can see the average (mean) star rating. However, we do not typically see the median. Why do you think that is?
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;img alt="" class="size-full wp-image-129 aligncenter" height="299" src="http://tylermarrs.com/wp-content/uploads/2017/01/customer_reviews.png" style="" title="" width="598"&gt;The plot above illustrates a histogram of customer ratings. It represents the frequency of ratings provided by each customer. The green line is the median and the blue line is the mean. This plot is not representative of the sample image above; it is random sample data that I generated in R (code below).
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;66&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nf"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;184&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nf"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;200&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nf"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;201&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nf"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;349&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+&lt;span class="n"&gt;m&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nf"&gt;mean&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;md&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nf"&gt;median&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nf"&gt;hist&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"Customer Ratings"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ylab&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"Number of Customers"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;xlab&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"Rating"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nf"&gt;abline&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;col&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;"blue"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nf"&gt;abline&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;md&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;col&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;"green"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;p&gt;
+    Knowing that the median is 4 and the average is 3.583. Do you think it is important to know the median when deciding on a product to purchase? Probably not. If you remember our discussion on the mean and median, it is very context dependent on when to use one versus the other. Imagine if we only displayed the median. You would probably be more interested in purchasing this item.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Conclusion
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Seeing a real world application of the mean, median and mode should provide you with more insight into these important descriptive statistics. Customer rating systems are used in ecommerce everywhere and the intuition behind them should be a little clearer. In the next blog post we will look at the standard deviation.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>descriptive-statistics</category><category>python</category><category>r</category><category>statistics</category><guid>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-4-application-of-mean-median-and-mode/</guid><pubDate>Tue, 31 Jan 2017 07:37:07 GMT</pubDate></item><item><title>Quick Stats - Descriptive Statistics Part 3 - Mode</title><link>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-3-mode/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;
+    Introduction
+&lt;/h3&gt;
+&lt;p&gt;
+    In this quick post covering descriptive statistics we will cover the mode. The mode describes the frequency of values within a given data set. To learn about the &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-2-median/" target="_blank"&gt;median&lt;/a&gt; or &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-1-mean/" target="_blank"&gt;mean&lt;/a&gt;, please click the respective links.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Mode
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The mode is one of the easiest descriptive statistics to understand. It simply provides the value(s) that occur(s) most frequently. In most cases it is not very informative to identify a single value that occurs frequently, however it is useful to find the number of occurences for many values. To do this we can make use of a histogram to display the data.
+&lt;/p&gt;
+
+&lt;p&gt;
+    Lets generate 1,000 numbers in the range of 1 to 20 and visualize it. The code to do this in R follows:
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="m"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;replace&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;T&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nf"&gt;hist&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"Random Values 1 to 20"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;p&gt;
+    In the code sample above we generated the numbers and created a histogram of the data. A histogram, shown below, displays the number of occurrences for each value observed in our data set.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-125 aligncenter" height="299" src="http://tylermarrs.com/wp-content/uploads/2017/01/frequency_example.png" style="" title="" width="598"&gt;
+&lt;/p&gt;
+
+&lt;h3&gt;
+    R
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Unfortunately, there is not a single function to obtain the mode of a given data set. However, we can create a table for the number of occurrences or visualize the data with a histogram.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nf"&gt;table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Python
+&lt;/h3&gt;
+
+&lt;p&gt;
+    In the Scipy module we can obtain the mode only.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;scipy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;stats&lt;/span&gt;
+&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;stats&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;mode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;p&gt;
+    We can also use Scipy to reproduce a frequency table.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;scipy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;stats&lt;/span&gt;
+&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;stats&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;itemfreq&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Conclusion
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The mode is one of the most under used descriptive values of a data set. It simply provides you with what value occurs most frequently. In some instances it might be nice to know, but less useful than the median or mean. R does not provide a built in method for finding the mode by itself, however Python's Scipy module provides both frequencys of all values or simply the mode.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-4-application-of-mean-median-and-mode/" target="_blank"&gt;In the next post we will look at some real world applications of the mean, median and mode.&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>descriptive-statistics</category><category>python</category><category>r</category><category>statistics</category><guid>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-3-mode/</guid><pubDate>Thu, 26 Jan 2017 06:12:12 GMT</pubDate></item><item><title>Quick Stats - Descriptive Statistics Part 2 - Median</title><link>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-2-median/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;
+    Introduction
+&lt;/h3&gt;
+&lt;p&gt;
+    In this next post on descriptive statistics, the median will be discussed. In &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-1-mean/" target="_blank"&gt;part 1 of this blog series we learned about the mean (average)&lt;/a&gt; and found out that it can easily be skewed by large or small values. Both the median and mean are "measures of central tendency". Central tendency is essentially the center position of a distribution for a data set. Now that you are refreshed, we can discuss the median.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Median
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The median is simple to calculate. First, we must arrange the values from least to greatest. Next, we pick the center value - this is our median when there is an odd number of values. When there are an even number of values we simply add the two center values together and divide by 2.
+&lt;/p&gt;
+
+&lt;p&gt;
+    Here are examples of both odd and even cases:
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;strong&gt;Odd number of values&lt;/strong&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;1, 2, 3, 4, 5
+Median = 3&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+    &lt;strong&gt;Even number of values&lt;/strong&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;1, 2, 3, 4
+Median = (2 + 3) / 2 = 2.5&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;
+    Median vs. Mean
+&lt;/h3&gt;
+
+&lt;p&gt;
+    As you can see the median is not influenced by outliers. It provides the central value that most of us tend to think of as the average (mean). You might ask when you would use one over the other. This question is difficult to answer without context. In some situations it may make more sense to use one or both. Let's look at some grades for 10 random students to see how the mean and median look.
+&lt;/p&gt;
+
+&lt;p&gt;
+    The raw values are as follows:
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;20, 20, 25, 27, 29, 37, 45, 55, 90, 100&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-114 aligncenter" height="299" src="http://tylermarrs.com/wp-content/uploads/2017/01/exam_grades_median_mean.png" style="" title="" width="598"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    In the plot, shown above, the blue line represents the mean - 44.8%. The green line represents the median - 33%. Clearly there is a difference between these two measures of central point.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    R
+&lt;/h3&gt;
+
+&lt;p&gt;
+    To calculate the median in R - simply use the built in function.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;grades&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;25&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;27&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;29&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;37&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;45&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;55&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;90&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;median_grade&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;median&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;grades&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Python
+&lt;/h3&gt;
+
+&lt;p&gt;
+    To calculate the median in Python we use Numpy. Import Numpy and use the median function.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;span class="n"&gt;grades&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;25&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;27&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;29&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;37&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;45&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;55&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;90&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;median_grade&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;median&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;grades&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Conclusion
+&lt;/h3&gt;
+
+&lt;p&gt;
+    In this post we discussed the median and how it differentiates from the mean. We also established that context is important when deciding to use one versus the other. The mean and median are important values used in statistics and our every day lives.
+&lt;/p&gt;
+
+&lt;p&gt;
+    The next article will discuss the mode - another useful descriptive statistic.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>descriptive-statistics</category><category>median</category><category>python</category><category>r</category><category>statistics</category><guid>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-2-median/</guid><pubDate>Wed, 25 Jan 2017 05:28:35 GMT</pubDate></item><item><title>Quick Stats - Descriptive Statistics Part 1 - Mean</title><link>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-1-mean/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;
+    Introduction
+&lt;/h3&gt;
+&lt;p&gt;
+    Descriptive statistics is a meaningful part of statistics in which a value provides informative insight about a particular data set. Some examples of descriptive stastics include the values mean, median and mode. In this post I will provide some concepts of the mean and how to calculate this value using both R and Python. All of the examples in Python will make use of the library &lt;a href="https://www.scipy.org/" target="_blank"&gt;SciPy&lt;/a&gt; or &lt;a href="http://www.numpy.org/" target="_blank"&gt;Numpy&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Mean
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The mean provides an average of the observed values. It can be useful to show a simple summary illustrating the average, however it can become very misleading. Keep in mind that the terms mean and average can be used interchangeably.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;br&gt;
+    Let's look at the following numbers:
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;Set 1
+1, 2, 3, 4, 5, 6, 7
+
+Set 2
+1, 2, 3, 4, 5, 20, 100&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+    In set 1 the average is meaningful as it respresents a fair distribution of the values. However, in set 2 the average is right skewed due to the large numbers. In other words, the mean does not represent the majority of the observations. Imagine if these sets represented exam scores. This would mean that average for set 1 is 4% and average of set 2 is 21.67%. You should get the idea that only 2 students in set 2 performed well while the majority of the students performed very poorly. It is very important to know the underlying data and how the mean represents it.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-89" height="323" src="http://tylermarrs.com/wp-content/uploads/2017/01/set1.png" style="" title="" width="472"&gt;&lt;img alt="" class="alignnone size-full wp-image-90" height="323" src="http://tylermarrs.com/wp-content/uploads/2017/01/set2.png" style="" title="" width="472"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The two plots above provide a better illustration of how skewed the data becomes with larger values. The red line marks the average. Keep in mind that this can happen with very small values as well.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    &lt;br&gt;
+    R
+&lt;/h3&gt;
+
+&lt;p&gt;
+    In R it is very easy to calculate the mean. Below, we create a variable to hold some values and simply use the built-in mean function.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;my_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="m"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="m"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nf"&gt;mean&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;my_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Python
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Similarly Python makes it very easy to calculate the mean. Ensure that you have the Numpy package installed to follow this snippet.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+
+&lt;span class="n"&gt;my_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;mean&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;my_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Conclusion
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The mean is a very useful but sometimes misleading descriptive statistic. It is very common to hear about averages in our daily lives, but you should know that it may not always be a good representation of the data.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-2-median/" target="_blank"&gt;The next article will cover the median - another useful descriptive statistic that is not as fragile.&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>descriptive-statistics</category><category>mean</category><category>python</category><category>r</category><category>statistics</category><guid>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-1-mean/</guid><pubDate>Mon, 16 Jan 2017 17:46:43 GMT</pubDate></item><item><title>Paper - Dimension reduction techniques for the integrative analysis of multi-omics data</title><link>http://tylermarrs.com/posts/paper-dimension-reduction-techniques-for-the-integrative-analysis-of-multi-omics-data/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+    This is a great paper that introduces some techniques to analyze multiple "omics" data sets. With my interest in integrative "omics" data analysis, I thought it would be important to store this for myself. The paper discusses current techniques and challenges in reducing the number of data dimensions.
+&lt;/p&gt;
+&lt;p&gt;
+    &lt;a href="http://bib.oxfordjournals.org/content/17/4/628.full.pdf+html" target="_blank"&gt;Dimension reduction techniques for the integrative analysis of multi-omics data&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    Abstract
+&lt;/p&gt;
+
+&lt;blockquote cite="http://bib.oxfordjournals.org/content/17/4/628.full.pdf+html"&gt;
+    &lt;p&gt;
+        State-of-the-art next-generation sequencing, transcriptomics, proteomics and other high-throughput ‘omics' technologies enable the efficient generation of large experimental data sets. These data may yield unprecedented knowledge about molecular pathways in cells and their role in disease. Dimension reduction approaches have been widely used in exploratory analysis of single omics data sets. This review will focus on dimension reduction approaches for simultaneous exploratory analyses of multiple data sets. These methods extract the linear relationships that best explain the correlated structure across data sets, the variability both within and between variables (or observations) and may highlight data issues such as batch effects or outliers. We explore dimension reduction techniques as one of the emerging approaches for data integration, and how these can be applied to increase our understanding of biological systems in normal physiological function and disease.
+    &lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+     
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>bioinformatics</category><category>data analysis</category><category>paper</category><category>statistics</category><guid>http://tylermarrs.com/posts/paper-dimension-reduction-techniques-for-the-integrative-analysis-of-multi-omics-data/</guid><pubDate>Thu, 28 Jul 2016 12:34:34 GMT</pubDate></item></channel></rss>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about scipy)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/scipy.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Edit Distance Hierarchical Clustering</title><link>http://tylermarrs.com/posts/edit-distance-hierarchical-clustering/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+    This is a quick blog post to illustrate how you can use Scipy, NLTK and Numpy to perform hierarchical clustering based on edit distance. Performing hierarchical clustering based on edit distance allows you to see what words or set of text is similar based on edit distance. Edit distance is the number of changes required to make text x turn into text y. Essentially, you could quickly look at a number of labels to check for typos or duplications.
+&lt;/p&gt;
+&lt;p&gt;
+    Here is a code snippet illustrating how you can cluster some labels and create a dendrogram of the relationships.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;maplotlib.pyplot&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;plt&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;nltk.metrics.distance&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;edit_distance&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;scipy.cluster.hierarchy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;linkage&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;scipy.cluster.hierarchy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;dendrogram&lt;/span&gt;
+
+&lt;span class="n"&gt;labels&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="s1"&gt;'Tacos'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Tacoes'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Tomatos'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Tomatoes'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Beef'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Beer'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Steak'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Pig'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Twig'&lt;/span&gt;
+&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;d&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;coord&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;j&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;coord&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;edit_distance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+&lt;span class="n"&gt;coords&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;triu_indices&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;apply_along_axis&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;coords&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;clust&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;linkage&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;dend&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dendrogram&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;clust&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;leaf_font_size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;p&gt;
+    The dendrogram from this set of data looks like this:
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-243 aligncenter" height="251" src="http://tylermarrs.com/wp-content/uploads/2017/03/edit_distance_dedrogram.png" style="" title="" width="375"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The x axis shows the labels of text and the y axis shows the edit distance. The words "Beer" and "Beef" are clustered together as only one change must be made to make the words similar. The words "Pig" and "Twig" require two changes.
+&lt;/p&gt;
+
+&lt;p&gt;
+    I thought that this was very useful in a scenario of data cleansing where there were many duplications of a given label. Automating the actual corrections of the text may depend on your use case, but visualizing these discrepencies up front can help you make a better decision.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>clustering</category><category>data analytics</category><category>edit distance</category><category>nltk</category><category>numpy</category><category>scipy</category><guid>http://tylermarrs.com/posts/edit-distance-hierarchical-clustering/</guid><pubDate>Wed, 15 Mar 2017 20:55:35 GMT</pubDate></item></channel></rss>

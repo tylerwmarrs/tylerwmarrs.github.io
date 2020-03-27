@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about automation)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/automation.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Challenger Tier Baron Throw Analysis</title><link>http://tylermarrs.com/posts/challenger-tier-baron-throw-analysis/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;
+    Abstract
+&lt;/h3&gt;
+&lt;p&gt;
+    This is a data analysis exercise to answer the question of: Which region throws the most at baron? If you are not familiar with the game, &lt;a href="http://leageoflegends.com" target="_blank"&gt;League of Legends&lt;/a&gt;, it is a &lt;a href="https://en.wikipedia.org/wiki/Multiplayer_online_battle_arena" target="_blank"&gt;Multiplayer Online Battle Arena (MOBA)&lt;/a&gt;. In short, the game consists of two teams that try to destroy one another's nexus. Each team consists of five players and each player gets to choose a champion to play as.
+&lt;/p&gt;
+
+&lt;div style="text-align: center;float:right"&gt;
+    &lt;img alt="" src="http://vignette3.wikia.nocookie.net/leagueoflegends/images/5/5b/Baron_Nashor_VU.jpg" style="margin: 5px; width: 200px; height: 150px;"&gt;&lt;br&gt;
+    &lt;span style="font-size:12px;"&gt;&lt;strong&gt;&lt;em&gt;Figure 1&lt;/em&gt;. Baron Nashor&lt;br&gt;
+    Source &lt;a href="http://leagueoflegends.com" target="_blank"&gt;leagueoflegends.com&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+    Although destroying the nexus is the winning objective, there are many small objectives within the game. Some of these objectives consist of killing monsters. Baron Nashor (Figure 1) is the toughest monster to kill within the game and on occassion poor choices by players causes a Baron Throw. A Baron Throw can be defined as a poor choice in an attempt to kill Baron Nashor that causes your team to die. Within my analysis I found that there is not a major difference between the challenger players within different regions. However, there is enough of a difference to show that some regions do throw at baron more than others by a small margin.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Methods
+&lt;/h3&gt;
+
+&lt;h4&gt;
+    Introduction
+&lt;/h4&gt;
+
+&lt;p&gt;
+    Riot Games' League of Legends &lt;a href="https://developer.riotgames.com" target="_blank"&gt;API&lt;/a&gt; was used to collect data for this analysis. The API provided endpoints for fetching challenger players, summoner matches and match information. The overall process consisted of fetching data from the API, classifying matches for Baron Throws and finally visualization of the data.
+&lt;/p&gt;
+
+&lt;h4&gt;
+    Data Collection
+&lt;/h4&gt;
+
+&lt;p&gt;
+    Several scripts were created in the process of collecting the data. &lt;a href="https://bitbucket.org/snakemake/snakemake/wiki/Home" target="_blank"&gt;Snakemake&lt;/a&gt;, a Python workflow engine, was used to help streamline the process. The benefit to using Snakemake is that it enables you to resume the workflow from where it left off in the event of a software bug, power outage or hardware failure. Be aware that Snakemake is not magic. You must create your data pipeline in a way that it can be resumed in the event of a failure.
+&lt;/p&gt;
+
+&lt;div style="text-align: center;"&gt;
+    &lt;img alt="baron throws data pipeline" class="alignnone size-full wp-image-44" height="214" src="http://tylermarrs.com/wp-content/uploads/2016/06/baron-throws-data-pipeline.png" width="734"&gt;&lt;br&gt;
+    &lt;span style="font-size:12px;"&gt;&lt;strong&gt;&lt;em&gt;Figure 2&lt;/em&gt;. Snakemake Data Pipeline&lt;/strong&gt;&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+    The first step was to query for the players within the challenger tier for all 11 regions (Table 1). As of the year 2016, each region contains 200 challenger tier players. Analyzing every match that a player has participated in would be exhaustive. For example, some players started playing the game when it was first created in 2009. Assuming the player only played on that account, it could be thousands of games to analyze. To narrow down match history, the matches played during the 2016 season were collected for each player. On average this consisted of 335 games per player.
+&lt;/p&gt;
+
+&lt;table align="center" border="1" cellpadding="5" cellspacing="0"&gt;
+    &lt;caption&gt;
+        &lt;span style="font-size:12px;"&gt;&lt;strong&gt;&lt;em&gt;Table 1&lt;/em&gt;. Regions&lt;/strong&gt;&lt;/span&gt;
+    &lt;/caption&gt;
+    &lt;tbody&gt;
+        &lt;tr style="background-color:#CCC"&gt;
+            &lt;td&gt;
+                &lt;strong&gt;Region&lt;/strong&gt;
+            &lt;/td&gt;
+            &lt;td&gt;
+                &lt;strong&gt;Code&lt;/strong&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                Brazil
+            &lt;/td&gt;
+            &lt;td&gt;
+                BR
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                Latin America North
+            &lt;/td&gt;
+            &lt;td&gt;
+                LAN
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                Oceania
+            &lt;/td&gt;
+            &lt;td&gt;
+                OCE
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                Turkish
+            &lt;/td&gt;
+            &lt;td&gt;
+                TR
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                Latin America South
+            &lt;/td&gt;
+            &lt;td&gt;
+                LAS
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                Russia
+            &lt;/td&gt;
+            &lt;td&gt;
+                RU
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                European Union West
+            &lt;/td&gt;
+            &lt;td&gt;
+                EUW
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                Japan
+            &lt;/td&gt;
+            &lt;td&gt;
+                JP
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                Korea
+            &lt;/td&gt;
+            &lt;td&gt;
+                KR
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                North America
+            &lt;/td&gt;
+            &lt;td&gt;
+                NA
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                European Union Northeast
+            &lt;/td&gt;
+            &lt;td&gt;
+                EUNE
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;
+    The longest process in the data pipeline is during the match fetching phase. This is due to the massive number of API requests that need to be made; one for each match. Approximately 750,000 API calls to fetch match information was required. During each API call consideration of rate limiting and service instability must be handled. Once the match is fetched it is classified as a Baron Throw or not and written to a flat file so that it can be aggregated for data visualization. Data aggregation consists of grouping each player's matches from each region to determine the number of Baron Throws that occurred within their match history. The Baron Throw rate is a simple division of Baron Throws / matches played. Furthermore each aggregated result is dumped in JSON format and uploaded to the web server so that it can be visualized. The web page makes use of a JavaScript plotting library; &lt;a href="https://plot.ly/javascript/" target="_blank"&gt;Plotly.js&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;h4&gt;
+    Baron Throw Classification
+&lt;/h4&gt;
+
+&lt;p&gt;
+    In order to determine if a baron throw really occurred, time series analysis and positional analysis was required. Without positional analysis it would be difficult to know for sure if a Baron throw really occurred. This is due to the location of Baron being relatively small compared to the entire game map. So only looking at deaths within the timeframe of the Baron kill event may not be very accurate.
+&lt;/p&gt;
+
+&lt;div style="text-align: center;"&gt;
+    &lt;img alt="Baron zone" class="alignnone size-full wp-image-30" height="515" src="http://tylermarrs.com/wp-content/uploads/2016/06/baron_zone.png" width="515"&gt;&lt;br&gt;
+    &lt;span style="font-size:12px;"&gt;&lt;strong&gt;&lt;em&gt;Figure 3&lt;/em&gt;. Summoner's Rift Baron Throw Zone&lt;/strong&gt;&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+    The match data provided by Riot includes events within the form of a time series and XY coordinates of where the event occurred. Purely analyzing kill events within a given time span is not sufficient to determine if a Baron Throw event occurred. For example, a small group of players could be killed at the bottom right corner of the map while baron was taken successfully by other players. To make the classifier as accurate as possible, a radius around Baron Nashor was created (Figure 3) and used to determine if player deaths coincided within this area. Since Baron Nashor does not spawn until 20 minutes into the game, the search space could be narrowed down to all events after 20 minutes. Once a Baron Nashor kill event was found, events within a 30 second period before and after is analyzed for player deaths. If 4 or 5 players were killed on the same team within the baron zone and within the thresholds of 30 seconds before the baron event or 30 seconds after the baron event, a Baron Throw occurred. Figure 4 shows the classification algorithm in pseudocode form.
+&lt;/p&gt;
+
+&lt;div&gt;
+    &lt;pre&gt;
+&lt;code class="language-go"&gt;BARON_X = 5007
+BARON_Y = 10471
+BARON_R = 1947
+
+function inBaronZone(x, y)
+ distance_x = BARON_X - x
+ distance_y = BARON_Y - y
+ square_dist = (distance_x * distance_x) + (distance_y * distance_y)
+ square_r = BARON_R * BARON_R
+
+ return square_dist &amp;lt;= square_r
+end
+
+function hasBaronKills(match)
+  match.BaronKills &amp;gt; 0
+end
+
+function playerTeam(match, summoner_id)
+  return blue or red accordingly
+end
+
+KillEvent class {
+  KillerID integer
+  ParticipantID integer
+  X integer
+  Y integer
+}
+
+BaronEvent class {
+  FrameIndex integer
+  Time integer
+  KillerID integer
+  KillEvents array
+}
+
+function isBaronThrow(match, summoner)
+  if not hasBaronKills(match)
+    return false
+  end
+
+  baron_events = array
+  for each index, timeline event
+    if timeline event &amp;lt; 20 minutes
+      continue
+    end
+
+    if timeline event == baron kill
+      create baron event instance with values
+      add baron event to baron_events array
+    end
+  end
+
+  player_team = playerTeam(match, summoner_id)
+
+  // Look at one frame before and after the baron event for kills
+  for each baron_events
+    for each timeevent in range of baron_event.FrameIndex -1 to baron_event.FrameIndex + 1
+      if kill event and event 30 seconds before baron or 30 seconds after baron
+        create kill event instance with values
+        add kill event to baron event
+      end
+    end
+  end
+
+  is_throw = false
+  for each baron_events
+    blue_deaths = 0
+    red_deaths = 0
+    for each baron_event.kill_events
+      if inBaronZone(kill_event.x, kill_event.y)
+        if kill_event.ParticipantID is blue team
+          add 1 to blue_deaths
+        else
+          add 1 to red_deaths
+        end
+      end
+
+      if player_team == blue &amp;amp;&amp;amp; blue_deaths &amp;gt;= 4 or player_team == red and red_deaths &amp;gt;= 4
+        is_throw = true
+        break from loop
+      end
+    end
+  end
+  return is_throw
+end&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p style="text-align: center;"&gt;
+        &lt;span style="font-size:12px;"&gt;&lt;strong&gt;&lt;em&gt;Figure 4&lt;/em&gt;. Baron Throw Classifier Pseudocode&lt;/strong&gt;&lt;/span&gt;
+    &lt;/p&gt;
+&lt;/div&gt;
+
+&lt;h4&gt;
+    Conclusion
+&lt;/h4&gt;
+
+&lt;div style="text-align: center;t"&gt;
+    &lt;img alt="Challenger tier baron throws by region" class="alignnone size-full wp-image-31" height="500" src="http://tylermarrs.com/wp-content/uploads/2016/06/challenger_region_baron_throws.png" width="1000"&gt;&lt;br&gt;
+    &lt;span style="font-size:12px;"&gt;&lt;strong&gt;&lt;em&gt;Figure 5&lt;/em&gt;. Challenger Throw Rate by Region&lt;/strong&gt; &lt;/span&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+    While a significant margin is not illustrated in Figure 5, a small difference of Baron Throws is observed across each region. Korea shows the highest median rate of 1.9% for baron throws and Latin America South shows the lowest rate of 1.23% for Baron Throws. The region in which a player plays League of Legends does not seem to be correlated with the Baron Throw rate. The small differences amongst regions may indicate the importance placed on Baron Nashor between these regions, however further analysis would need to be performed. A better observation for Baron Throw analysis could consist of comparisons amongst player ranks within each region. The player rank, according to Riot, illustrates the skill level of a player. Analyzing the throw rate of a player in the lowest tier, bronze, against the highest tier, challenger, should show a significant difference.
+&lt;/p&gt;
+
+&lt;p&gt;
+    To see up to date and more graphs at the regional level, please visit &lt;a href="http://lolstats.tylermarrs.com/baronthrows" target="_blank"&gt;lolstats.tylermarrs.com/baronthrows&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>automation</category><category>data analytics</category><category>data classification</category><category>data visualization</category><category>league of legends</category><guid>http://tylermarrs.com/posts/challenger-tier-baron-throw-analysis/</guid><pubDate>Fri, 10 Jun 2016 04:59:31 GMT</pubDate></item></channel></rss>

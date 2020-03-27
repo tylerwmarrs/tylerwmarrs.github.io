@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about paper)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/paper.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Paper - Dimension reduction techniques for the integrative analysis of multi-omics data</title><link>http://tylermarrs.com/posts/paper-dimension-reduction-techniques-for-the-integrative-analysis-of-multi-omics-data/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+    This is a great paper that introduces some techniques to analyze multiple "omics" data sets. With my interest in integrative "omics" data analysis, I thought it would be important to store this for myself. The paper discusses current techniques and challenges in reducing the number of data dimensions.
+&lt;/p&gt;
+&lt;p&gt;
+    &lt;a href="http://bib.oxfordjournals.org/content/17/4/628.full.pdf+html" target="_blank"&gt;Dimension reduction techniques for the integrative analysis of multi-omics data&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    Abstract
+&lt;/p&gt;
+
+&lt;blockquote cite="http://bib.oxfordjournals.org/content/17/4/628.full.pdf+html"&gt;
+    &lt;p&gt;
+        State-of-the-art next-generation sequencing, transcriptomics, proteomics and other high-throughput ‘omics' technologies enable the efficient generation of large experimental data sets. These data may yield unprecedented knowledge about molecular pathways in cells and their role in disease. Dimension reduction approaches have been widely used in exploratory analysis of single omics data sets. This review will focus on dimension reduction approaches for simultaneous exploratory analyses of multiple data sets. These methods extract the linear relationships that best explain the correlated structure across data sets, the variability both within and between variables (or observations) and may highlight data issues such as batch effects or outliers. We explore dimension reduction techniques as one of the emerging approaches for data integration, and how these can be applied to increase our understanding of biological systems in normal physiological function and disease.
+    &lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+     
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>bioinformatics</category><category>data analysis</category><category>paper</category><category>statistics</category><guid>http://tylermarrs.com/posts/paper-dimension-reduction-techniques-for-the-integrative-analysis-of-multi-omics-data/</guid><pubDate>Thu, 28 Jul 2016 12:34:34 GMT</pubDate></item></channel></rss>

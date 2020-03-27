@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naming A Baby Part 1 | Tyler Marrs</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="canonical" href="http://tylermarrs.com/posts/naming-a-baby-part-1/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-140537127-1"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-140537127-1');
+</script><link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="../../assets/css/theme.css">
+<link rel="stylesheet" media="screen" href="http://openfontlibrary.org/face/railway-sans" type="text/css">
+<link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../../favicon-16x16.png">
+<link rel="manifest" href="../../site.webmanifest">
+<link rel="mask-icon" href="../../safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+<meta name="author" content="Tyler Marrs">
+<link rel="prev" href="../anomaly-detection-matrix-profile-discords/" title="Anomaly Detection: Matrix Profile Discords" type="text/html">
+<link rel="next" href="../pareto-plot-with-matplotlib/" title="Pareto Plot With Matplotlib" type="text/html">
+<meta property="og:site_name" content="Tyler Marrs">
+<meta property="og:title" content="Naming A Baby Part 1">
+<meta property="og:url" content="http://tylermarrs.com/posts/naming-a-baby-part-1/">
+<meta property="og:description" content="Introduction¶Last year my wife and I had a child, Garen Jay Marrs. Finding a name for him was an interesting task due to my wife having difficulties in picking names. Our first pet together, a cat, di">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2019-02-19T00:00:00-06:00">
+<meta property="article:tag" content="clustering">
+<meta property="article:tag" content="feature engineering">
+<meta property="article:tag" content="sampling">
+<meta property="article:tag" content="statistics">
+</head>
+<body>
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse center" role="navigation"><div class="container">
+    <div align="center">
+      <img id="logo" src="../../images/me.jpg"><div id="blog-title">Tyler Marrs</div>
+      <div id="blog-description">Yet another data scientist's blog.</div>
+    </div>
+
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+    </div>
+    <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+<li>
+<a href="../../pages/about/">About</a>
+                </li>
+<li>
+<a href="../../">Blog</a>
+                </li>
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../pages/projects/">Projects</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+
+        </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<!--Add Links to social media sites --><!-- pass -->
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+</nav><!-- End of Menubar --><div class="container">
+  <!--Body content-->
+  <div class="row">
+      
+      
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Naming A Baby Part 1</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Tyler Marrs
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2019-02-19T00:00:00-06:00" itemprop="datePublished" title="2019-02-19">2019-02-19</time></a>
+            </p>
+            
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">¶</a>
+</h2>
+<p>Last year my wife and I had a child, Garen Jay Marrs. Finding a name for him was an interesting task due to my wife having difficulties in picking names. Our first pet together, a cat, did not have a name for around 2 months.</p>
+<p>I spent quite a bit of time researching different apps available, but they did not seem to do what I wanted. Generally the apps only offered going through a list of names and liking or disliking them. As a data scientist, I was hoping to find an app that would suggest names as you provided feedback on which names you like and dislike. None of the apps that I reviewed had this capability so I decided to create my own.</p>
+<p>This post is the starting point of a short blog series that describes how I created my ideal baby naming application. It will cover both high and low level details of how it works and my reasoning behind the functionality. At the end of this blog series, the application will be freely available.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="What-Is-In-A-Name?">What Is In A Name?<a class="anchor-link" href="#What-Is-In-A-Name?">¶</a>
+</h2>
+<p>When choosing a name, most of us try to sound out the name and just create a list of what we like. However, when you look at it from an analytical eye, you see patterns in the names. Some features that my wife and I found important when choosing a name for our son included:</p>
+<ul>
+<li>The letter it starts with</li>
+<li>2 - 3 letters that the name starts with</li>
+<li>2 - 3 letters that the name ends with</li>
+<li>What it sounds like when pronounced</li>
+<li>Percentage of the population that have the name as male or female</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Dataset">Dataset<a class="anchor-link" href="#Dataset">¶</a>
+</h2>
+<p>The dataset that I used is from the Social Security Administration. They provide various statistics (percent male and female) over a period of time for names. This was a great set of names consisting of around 10,000 names. Unfortunately, it does not include a good mix of various ethnicities; Arabic, Chinese and Indian to name a few. For our case this was not an issue.</p>
+<p>You can learn more about the data offered here:</p>
+<p><a href="https://www.ssa.gov/OACT/babynames/" target="_blank">https://www.ssa.gov/OACT/babynames/</a></p>
+
+</div>
+</div>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/clustering/" rel="tag">clustering</a></li>
+            <li><a class="tag p-category" href="../../categories/feature-engineering/" rel="tag">feature engineering</a></li>
+            <li><a class="tag p-category" href="../../categories/sampling/" rel="tag">sampling</a></li>
+            <li><a class="tag p-category" href="../../categories/statistics/" rel="tag">statistics</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../anomaly-detection-matrix-profile-discords/" rel="prev" title="Anomaly Detection: Matrix Profile Discords">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../pareto-plot-with-matplotlib/" rel="next" title="Pareto Plot With Matplotlib">Next post</a>
+            </li>
+        </ul></nav></aside><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha384-3lJUsx1TJHt7BA4udB5KPnDrlkO8T6J6v/op7ui0BbCjvZ9WqV4Xm6DTP6kQ/iBH" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
+        </script></article>
+</div>
+<!--End of body content-->
+</div>
+<div class="footerbox">
+  Contents © 2020 Tyler Marrs
+  
+</div>
+
+            <script src="../../assets/js/all-nocdn.js"></script><!-- Add Jumbotron scroll js --><script type="text/javascript">//<![CDATA[
+$(window).load(function(){
+  $(window).scroll(function() {
+    var scrolledY = $(window).scrollTop();
+    $('.jumbotron').css('background-position', 'left ' + ((scrolledY)) + 'px');
+  });
+});//]]>
+</script><!-- fancy dates --><script>
+moment.locale("en");
+fancydates(0, "YYYY-MM-DD");
+</script><!-- end fancy dates --><script>
+baguetteBox.run('div#content', {
+    ignoreClass: 'islink',
+    captions: function(element) {
+        return element.getElementsByTagName('img')[0].alt;
+}});
+</script><!-- Abstract hide/show
+<script src"/assets/js/div_toggle.js"></script>
+--><script type="text/javascript">
+function toggle(showHideDiv, switchTextDiv) {
+    var ele = document.getElementById(showHideDiv);
+    var text = document.getElementById(switchTextDiv);
+    if(ele.style.display == "none") {
+        ele.style.display = "block";
+        text.innerHTML = "[hide abstract]";
+    }
+    else {
+            ele.style.display = "none";
+            text.innerHTML = "[show abstract]";
+    }
+}
+</script>
+</body>
+</html>

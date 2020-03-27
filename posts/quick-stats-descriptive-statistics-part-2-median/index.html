@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quick Stats - Descriptive Statistics Part 2 - Median | Tyler Marrs</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="canonical" href="http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-2-median/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-140537127-1"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-140537127-1');
+</script><link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="../../assets/css/theme.css">
+<link rel="stylesheet" media="screen" href="http://openfontlibrary.org/face/railway-sans" type="text/css">
+<link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../../favicon-16x16.png">
+<link rel="manifest" href="../../site.webmanifest">
+<link rel="mask-icon" href="../../safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+<meta name="author" content="Tyler Marrs">
+<link rel="prev" href="../quick-stats-descriptive-statistics-part-1-mean/" title="Quick Stats - Descriptive Statistics Part 1 - Mean" type="text/html">
+<link rel="next" href="../quick-stats-descriptive-statistics-part-3-mode/" title="Quick Stats - Descriptive Statistics Part 3 - Mode" type="text/html">
+<meta property="og:site_name" content="Tyler Marrs">
+<meta property="og:title" content="Quick Stats - Descriptive Statistics Part 2 - Median">
+<meta property="og:url" content="http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-2-median/">
+<meta property="og:description" content="Introduction
+
+
+    In this next post on descriptive statistics, the median will be discussed. In part 1 of this blog series we learned about the mean (average) and found out that it can easily be skew">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2017-01-24T23:28:35-06:00">
+<meta property="article:tag" content="descriptive-statistics">
+<meta property="article:tag" content="median">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="r">
+<meta property="article:tag" content="statistics">
+</head>
+<body>
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse center" role="navigation"><div class="container">
+    <div align="center">
+      <img id="logo" src="../../images/me.jpg"><div id="blog-title">Tyler Marrs</div>
+      <div id="blog-description">Yet another data scientist's blog.</div>
+    </div>
+
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+    </div>
+    <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+<li>
+<a href="../../pages/about/">About</a>
+                </li>
+<li>
+<a href="../../">Blog</a>
+                </li>
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../pages/projects/">Projects</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+
+        </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<!--Add Links to social media sites --><!-- pass -->
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+</nav><!-- End of Menubar --><div class="container">
+  <!--Body content-->
+  <div class="row">
+      
+      
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Quick Stats - Descriptive Statistics Part 2 - Median</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Tyler Marrs
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2017-01-24T23:28:35-06:00" itemprop="datePublished" title="2017-01-24">2017-01-24</time></a>
+            </p>
+            
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<p></p>
+<h3>
+    Introduction
+</h3>
+<p>
+    In this next post on descriptive statistics, the median will be discussed. In <a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-1-mean/" target="_blank">part 1 of this blog series we learned about the mean (average)</a> and found out that it can easily be skewed by large or small values. Both the median and mean are "measures of central tendency". Central tendency is essentially the center position of a distribution for a data set. Now that you are refreshed, we can discuss the median.
+</p>
+
+<h3>
+    Median
+</h3>
+
+<p>
+    The median is simple to calculate. First, we must arrange the values from least to greatest. Next, we pick the center value - this is our median when there is an odd number of values. When there are an even number of values we simply add the two center values together and divide by 2.
+</p>
+
+<p>
+    Here are examples of both odd and even cases:
+</p>
+
+<p>
+    <strong>Odd number of values</strong>
+</p>
+
+<pre>
+<code>1, 2, 3, 4, 5
+Median = 3</code></pre>
+
+<p>
+    <strong>Even number of values</strong>
+</p>
+
+<pre>
+<code>1, 2, 3, 4
+Median = (2 + 3) / 2 = 2.5</code></pre>
+
+<h3>
+    Median vs. Mean
+</h3>
+
+<p>
+    As you can see the median is not influenced by outliers. It provides the central value that most of us tend to think of as the average (mean). You might ask when you would use one over the other. This question is difficult to answer without context. In some situations it may make more sense to use one or both. Let's look at some grades for 10 random students to see how the mean and median look.
+</p>
+
+<p>
+    The raw values are as follows:
+</p>
+
+<pre>
+<code>20, 20, 25, 27, 29, 37, 45, 55, 90, 100</code></pre>
+
+<p style="text-align: center;">
+    <img alt="" class="size-full wp-image-114 aligncenter" height="299" src="../../wp-content/uploads/2017/01/exam_grades_median_mean.png" style="" title="" width="598"></p>
+
+<p>
+    In the plot, shown above, the blue line represents the mean - 44.8%. The green line represents the median - 33%. Clearly there is a difference between these two measures of central point.
+</p>
+
+<h3>
+    R
+</h3>
+
+<p>
+    To calculate the median in R - simply use the built in function.
+</p>
+
+<pre class="code literal-block"><span></span><code><span class="n">grades</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">-</span> <span class="nf">c</span><span class="p">(</span><span class="m">20</span><span class="p">,</span> <span class="m">20</span><span class="p">,</span> <span class="m">25</span><span class="p">,</span> <span class="m">27</span><span class="p">,</span> <span class="m">29</span><span class="p">,</span> <span class="m">37</span><span class="p">,</span> <span class="m">45</span><span class="p">,</span> <span class="m">55</span><span class="p">,</span> <span class="m">90</span><span class="p">,</span> <span class="m">100</span><span class="p">)</span>
+<span class="n">median_grade</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">-</span> <span class="nf">median</span><span class="p">(</span><span class="n">grades</span><span class="p">)</span>
+</code></pre>
+
+
+<h3>
+    Python
+</h3>
+
+<p>
+    To calculate the median in Python we use Numpy. Import Numpy and use the median function.
+</p>
+
+<pre class="code literal-block"><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">grades</span> <span class="o">=</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">37</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+<span class="n">median_grade</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">grades</span><span class="p">)</span>
+</code></pre>
+
+
+<h3>
+    Conclusion
+</h3>
+
+<p>
+    In this post we discussed the median and how it differentiates from the mean. We also established that context is important when deciding to use one versus the other. The mean and median are important values used in statistics and our every day lives.
+</p>
+
+<p>
+    The next article will discuss the mode - another useful descriptive statistic.
+</p>
+
+<p></p>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/descriptive-statistics/" rel="tag">descriptive-statistics</a></li>
+            <li><a class="tag p-category" href="../../categories/median/" rel="tag">median</a></li>
+            <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
+            <li><a class="tag p-category" href="../../categories/r/" rel="tag">r</a></li>
+            <li><a class="tag p-category" href="../../categories/statistics/" rel="tag">statistics</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../quick-stats-descriptive-statistics-part-1-mean/" rel="prev" title="Quick Stats - Descriptive Statistics Part 1 - Mean">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../quick-stats-descriptive-statistics-part-3-mode/" rel="next" title="Quick Stats - Descriptive Statistics Part 3 - Mode">Next post</a>
+            </li>
+        </ul></nav></aside></article>
+</div>
+<!--End of body content-->
+</div>
+<div class="footerbox">
+  Contents © 2020 Tyler Marrs
+  
+</div>
+
+            <script src="../../assets/js/all-nocdn.js"></script><!-- Add Jumbotron scroll js --><script type="text/javascript">//<![CDATA[
+$(window).load(function(){
+  $(window).scroll(function() {
+    var scrolledY = $(window).scrollTop();
+    $('.jumbotron').css('background-position', 'left ' + ((scrolledY)) + 'px');
+  });
+});//]]>
+</script><!-- fancy dates --><script>
+moment.locale("en");
+fancydates(0, "YYYY-MM-DD");
+</script><!-- end fancy dates --><script>
+baguetteBox.run('div#content', {
+    ignoreClass: 'islink',
+    captions: function(element) {
+        return element.getElementsByTagName('img')[0].alt;
+}});
+</script><!-- Abstract hide/show
+<script src"/assets/js/div_toggle.js"></script>
+--><script type="text/javascript">
+function toggle(showHideDiv, switchTextDiv) {
+    var ele = document.getElementById(showHideDiv);
+    var text = document.getElementById(switchTextDiv);
+    if(ele.style.display == "none") {
+        ele.style.display = "block";
+        text.innerHTML = "[hide abstract]";
+    }
+    else {
+            ele.style.display = "none";
+            text.innerHTML = "[show abstract]";
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deriving Markov Transition Matrices | Tyler Marrs</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="canonical" href="http://tylermarrs.com/posts/deriving-markov-transition-matrices/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-140537127-1"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-140537127-1');
+</script><link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="../../assets/css/theme.css">
+<link rel="stylesheet" media="screen" href="http://openfontlibrary.org/face/railway-sans" type="text/css">
+<link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../../favicon-16x16.png">
+<link rel="manifest" href="../../site.webmanifest">
+<link rel="mask-icon" href="../../safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+<meta name="author" content="Tyler Marrs">
+<link rel="prev" href="../nikola-jupyter-notebook-publishing/" title="Nikola Jupyter Notebook Publishing" type="text/html">
+<link rel="next" href="../anomaly-detection-matrix-profile-discords/" title="Anomaly Detection: Matrix Profile Discords" type="text/html">
+<meta property="og:site_name" content="Tyler Marrs">
+<meta property="og:title" content="Deriving Markov Transition Matrices">
+<meta property="og:url" content="http://tylermarrs.com/posts/deriving-markov-transition-matrices/">
+<meta property="og:description" content="Introduction¶I had a need at work to understand the flow of a system. Knowing that a transition matrix would be perfect to understand state transitions, I researched available libraries within the Pyt">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2019-01-05T00:07:29-06:00">
+<meta property="article:tag" content="data science">
+<meta property="article:tag" content="markov">
+<meta property="article:tag" content="python">
+</head>
+<body>
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse center" role="navigation"><div class="container">
+    <div align="center">
+      <img id="logo" src="../../images/me.jpg"><div id="blog-title">Tyler Marrs</div>
+      <div id="blog-description">Yet another data scientist's blog.</div>
+    </div>
+
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+    </div>
+    <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+<li>
+<a href="../../pages/about/">About</a>
+                </li>
+<li>
+<a href="../../">Blog</a>
+                </li>
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../pages/projects/">Projects</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+
+        </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<!--Add Links to social media sites --><!-- pass -->
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+</nav><!-- End of Menubar --><div class="container">
+  <!--Body content-->
+  <div class="row">
+      
+      
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Deriving Markov Transition Matrices</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Tyler Marrs
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2019-01-05T00:07:29-06:00" itemprop="datePublished" title="2019-01-05">2019-01-05</time></a>
+            </p>
+            
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">¶</a>
+</h2>
+<p>I had a need at work to understand the flow of a system. Knowing that a transition matrix would be perfect to understand state transitions, I researched available libraries within the Python ecosystem. Unfortunately, I could not find a suitable solution.</p>
+<p>My desires in a library included:</p>
+<ul>
+<li>It must capture states as strings or numbers for easy analysis.</li>
+<li>Store both frequencies and probabilities of state transitions.</li>
+<li>Allow simple filtering of frequencies and probabilities.</li>
+<li>Output the derived matrix as a panadas dataframe or numpy matrix.</li>
+<li>Plot the matrix as a Digraph.</li>
+</ul>
+<p>This blog post shows my method of deriving a Markov transition matrix that covers all of those desires. This blog post <strong>DOES NOT</strong> discuss what a Markov transition matrix is in depth. You should read more about them on your own.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Code">Code<a class="anchor-link" href="#Code">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The code block below contains two important classes; Transition and TransitionMatrix. Transition is a class that keeps track of the current state and next state along with the frequency and probability. The TransitionMatrix stores all state transitions and provides methods for plotting and merging.</p>
+<p><strong>Note</strong>
+The graphviz and pandas modules are required to run this code.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="sd">"""</span>
+<span class="sd">This module is used to compute Markov Chains.</span>
+<span class="sd">"""</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">graphviz</span> <span class="kn">import</span> <span class="n">Digraph</span>
+<span class="kn">from</span> <span class="nn">graphviz</span> <span class="kn">import</span> <span class="n">Source</span>
+
+<span class="k">class</span> <span class="nc">Transition</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    This class hold meta-data about a transition between a Markov stochastic process.</span>
+<span class="sd">    Essentially it is used to keep track of frequencies and to compute probability of the</span>
+<span class="sd">    transition.</span>
+<span class="sd">    """</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Creates a transition object given the current_state and next_state as strings.</span>
+<span class="sd">        </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        current_state : str</span>
+<span class="sd">            The current state of this transition.</span>
+<span class="sd">        next_state : str</span>
+<span class="sd">            The next state of this transition.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">=</span> <span class="n">current_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_state</span> <span class="o">=</span> <span class="n">next_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prob</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="mi">0</span>
+        
+    <span class="k">def</span> <span class="nf">increment_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+    <span class="k">def</span> <span class="nf">increment_freq_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">+=</span> <span class="n">x</span>    
+            
+    <span class="k">def</span> <span class="nf">compute_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_state_freqs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">/</span> <span class="n">current_state_freqs</span>
+        <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_state</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Transition</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">current_state</span> \
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_state</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">next_state</span>
+        
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">'</span><span class="si">{}</span><span class="s1"> -&gt; </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_state</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_state</span><span class="p">)</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">increment_freq_by</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">tmp</span>
+
+<span class="k">class</span> <span class="nc">TransitionMatrix</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    The transition matrix is an object that is used to derive the Stochastic matrix</span>
+<span class="sd">    of a Markov chain. Internally, everything is storing in a dictionary of transitions.</span>
+<span class="sd">    This class also provides methods to obtain dict of dict, pandas dataframe, dotlang or</span>
+<span class="sd">    a graph representation of the matrix.</span>
+<span class="sd">    """</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">valid_states</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        This kicks off the computation of the matrix given states and optionally valid states.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        states : :obj:`list` of :obj:`obj`</span>
+<span class="sd">            The states to derive the matrix from. These states can be either int or str.</span>
+<span class="sd">        valid_states : :obj:`list of :obj:`obj`, optional</span>
+<span class="sd">            Optionally include valid states that are used to derive all valid transitions.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">if</span> <span class="n">valid_states</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__generate_transitions</span><span class="p">(</span><span class="n">valid_states</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__generate_transitions</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>                
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">__compute_matrix</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
+                
+    <span class="k">def</span> <span class="nf">__generate_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Internal method that generates all permutations of transitions.</span>
+<span class="sd">        """</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">current</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span><span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">transition</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">transition</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">transition</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">transition</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition</span>
+            
+    <span class="k">def</span> <span class="nf">__compute_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Internal method that computes frequencies and probability of the matrix.</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">states</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>        
+            <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">Transition</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span><span class="o">.</span><span class="n">increment_freq</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">__compute_prob</span><span class="p">()</span>
+            
+    <span class="k">def</span> <span class="nf">__compute_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Internal method that computes the probability of all transitions.</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">:</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">transition</span><span class="p">]</span><span class="o">.</span><span class="n">compute_prob</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">transition</span><span class="p">]</span><span class="o">.</span><span class="n">current_state</span><span class="p">]</span>
+            <span class="p">)</span>
+            
+    <span class="k">def</span> <span class="nf">__recompute_from_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Internal method that is primarily used when filtering and/or combining transition</span>
+<span class="sd">        matrices together. It is used to derive current state frequencies from transitions.</span>
+<span class="sd">        This can then be used to compute the correct probabilities.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">:</span>    
+            <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">current_state</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">freq</span>
+            
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">if</span> <span class="n">freq</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_frequencies</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">freq</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">__compute_prob</span><span class="p">()</span>
+            
+    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include_all</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Converts the transition matrix into a dict of dicts.</span>
+<span class="sd">        """</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">current_state</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">next_state</span>
+            
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">freq</span>
+            <span class="k">if</span> <span class="n">prob</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">prob</span>                        
+            
+            <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">include_all</span><span class="p">:</span>
+                <span class="k">continue</span>
+            
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="n">tmp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                
+            <span class="n">tmp</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        
+        <span class="k">return</span> <span class="n">tmp</span>
+    
+    <span class="k">def</span> <span class="nf">as_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include_all</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="n">prob</span><span class="p">,</span> <span class="n">include_all</span><span class="o">=</span><span class="n">include_all</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="nf">as_dotlang</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">current_state</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">next_state</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">prob</span>
+            
+            <span class="k">if</span> <span class="n">prob</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="s1">'   "</span><span class="si">{}</span><span class="s1">" -&gt; "</span><span class="si">{}</span><span class="s1">" [label = "</span><span class="si">{:2.4f}</span><span class="s1">"]'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">prob</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">"digraph G {</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s2">}"</span> <span class="o">%</span> <span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="nf">as_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">Digraph</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'svg'</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">'dot'</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">current_state</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">next_state</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">prob</span>
+
+            <span class="k">if</span> <span class="n">prob</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">" </span><span class="si">{:2.4f}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prob</span><span class="p">))</span>                
+
+        <span class="k">return</span> <span class="n">g</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Example">Example<a class="anchor-link" href="#Example">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In this example, I will generate a handful of states that occur linearly. The TransitionMatrix expects a list of values as the states or a string. If a string is passed, it treats each character in the string as a state.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">states_a</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'B'</span><span class="p">,</span> <span class="s1">'C'</span><span class="p">],</span> <span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">)]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Passing the states into the matrix derives the frequencies and probabilities.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">transition_matrix</span> <span class="o">=</span> <span class="n">TransitionMatrix</span><span class="p">(</span><span class="n">states_a</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="DataFrame">DataFrame<a class="anchor-link" href="#DataFrame">¶</a>
+</h3>
+<p>To obtain the matrix as a pandas dataframe we call the as_dataframe() method. By default we show the frequencies, however we can also get the probabilities.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">as_dataframe</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[5]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>A</th>
+      <th>B</th>
+      <th>C</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>A</th>
+      <td>41</td>
+      <td>108</td>
+      <td>59</td>
+    </tr>
+<tr>
+<th>B</th>
+      <td>103</td>
+      <td>238</td>
+      <td>146</td>
+    </tr>
+<tr>
+<th>C</th>
+      <td>63</td>
+      <td>142</td>
+      <td>99</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">as_dataframe</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>A</th>
+      <th>B</th>
+      <th>C</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>A</th>
+      <td>0.198068</td>
+      <td>0.221311</td>
+      <td>0.194079</td>
+    </tr>
+<tr>
+<th>B</th>
+      <td>0.497585</td>
+      <td>0.487705</td>
+      <td>0.480263</td>
+    </tr>
+<tr>
+<th>C</th>
+      <td>0.304348</td>
+      <td>0.290984</td>
+      <td>0.325658</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Visualize">Visualize<a class="anchor-link" href="#Visualize">¶</a>
+</h3>
+<p>We are able to visualize the transition matrix as a Digraph by calling the as_graph() method. If we wanted to export a dotfile, we can call the as_dotlang() method to obtain the dotlang string.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">as_graph</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
+
+<div class="output_svg output_subarea output_execute_result">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!-- Generated by graphviz version 2.36.0 (20140111.2315)
+ --><!-- Title: %3 Pages: 1 --><svg width="253pt" height="220pt" viewbox="0.00 0.00 253.00 220.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 216)"><title>%3</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-216 249,-216 249,4 -4,4"></polygon><!-- B --><g id="node1" class="node"><title>B</title>
+<ellipse fill="none" stroke="black" cx="125" cy="-194" rx="27" ry="18"></ellipse><text text-anchor="middle" x="125" y="-190.3" font-family="Times,serif" font-size="14.00">B</text></g><!-- B&#45;&gt;B --><g id="edge1" class="edge"><title>B-&gt;B</title>
+<path fill="none" stroke="black" d="M149.532,-202.121C160.508,-202.895 170,-200.188 170,-194 170,-189.843 165.715,-187.257 159.574,-186.242"></path><polygon fill="black" stroke="black" points="159.652,-182.742 149.532,-185.879 159.4,-189.738 159.652,-182.742"></polygon><text text-anchor="middle" x="193" y="-190.3" font-family="Times,serif" font-size="14.00"> 0.4877 </text></g><!-- A --><g id="node2" class="node"><title>A</title>
+<ellipse fill="none" stroke="black" cx="27" cy="-106" rx="27" ry="18"></ellipse><text text-anchor="middle" x="27" y="-102.3" font-family="Times,serif" font-size="14.00">A</text></g><!-- B&#45;&gt;A --><g id="edge2" class="edge"><title>B-&gt;A</title>
+<path fill="none" stroke="black" d="M97.9057,-191.535C74.8179,-188.683 42.9229,-180.595 27,-158 22.1944,-151.181 20.9262,-142.473 21.2424,-134.19"></path><polygon fill="black" stroke="black" points="24.7379,-134.421 22.3434,-124.101 17.7792,-133.662 24.7379,-134.421"></polygon><text text-anchor="middle" x="50" y="-146.3" font-family="Times,serif" font-size="14.00"> 0.2213 </text></g><!-- C --><g id="node3" class="node"><title>C</title>
+<ellipse fill="none" stroke="black" cx="125" cy="-18" rx="27" ry="18"></ellipse><text text-anchor="middle" x="125" y="-14.3" font-family="Times,serif" font-size="14.00">C</text></g><!-- B&#45;&gt;C --><g id="edge3" class="edge"><title>B-&gt;C</title>
+<path fill="none" stroke="black" d="M133.03,-176.657C135.451,-170.903 137.787,-164.298 139,-158 147.741,-112.612 147.741,-99.3882 139,-54 138.413,-50.9495 137.562,-47.8269 136.565,-44.7638"></path><polygon fill="black" stroke="black" points="139.82,-43.4757 133.03,-35.3427 133.266,-45.9349 139.82,-43.4757"></polygon><text text-anchor="middle" x="168" y="-102.3" font-family="Times,serif" font-size="14.00"> 0.2910 </text></g><!-- A&#45;&gt;B --><g id="edge5" class="edge"><title>A-&gt;B</title>
+<path fill="none" stroke="black" d="M44.882,-119.794C53.5706,-126.213 64.0437,-134.254 73,-142 83.4609,-151.047 94.4751,-161.673 103.66,-170.877"></path><polygon fill="black" stroke="black" points="101.379,-173.548 110.893,-178.209 106.362,-168.632 101.379,-173.548"></polygon><text text-anchor="middle" x="112" y="-146.3" font-family="Times,serif" font-size="14.00"> 0.4976 </text></g><!-- A&#45;&gt;A --><g id="edge4" class="edge"><title>A-&gt;A</title>
+<path fill="none" stroke="black" d="M51.5325,-114.121C62.5078,-114.895 72,-112.188 72,-106 72,-101.843 67.7151,-99.2567 61.5743,-98.2417"></path><polygon fill="black" stroke="black" points="61.6524,-94.7424 51.5325,-97.8789 61.3995,-101.738 61.6524,-94.7424"></polygon><text text-anchor="middle" x="95" y="-102.3" font-family="Times,serif" font-size="14.00"> 0.1981 </text></g><!-- A&#45;&gt;C --><g id="edge6" class="edge"><title>A-&gt;C</title>
+<path fill="none" stroke="black" d="M22.3434,-87.8994C20.4858,-77.217 20.1654,-63.6983 27,-54 40.7459,-34.4944 66.3951,-25.7995 88.0056,-21.9522"></path><polygon fill="black" stroke="black" points="88.5365,-25.4118 97.9057,-20.4653 87.4968,-18.4894 88.5365,-25.4118"></polygon><text text-anchor="middle" x="50" y="-58.3" font-family="Times,serif" font-size="14.00"> 0.3043 </text></g><!-- C&#45;&gt;B --><g id="edge8" class="edge"><title>C-&gt;B</title>
+<path fill="none" stroke="black" d="M143.995,-31.1189C160.979,-43.1924 184.724,-63.4428 195,-88 201.176,-102.76 201.176,-109.24 195,-124 186.33,-144.72 168.07,-162.374 152.374,-174.638"></path><polygon fill="black" stroke="black" points="149.922,-172.1 143.995,-180.881 154.105,-177.713 149.922,-172.1"></polygon><text text-anchor="middle" x="222" y="-102.3" font-family="Times,serif" font-size="14.00"> 0.4803 </text></g><!-- C&#45;&gt;A --><g id="edge9" class="edge"><title>C-&gt;A</title>
+<path fill="none" stroke="black" d="M110.893,-33.7914C100.686,-44.2526 86.39,-58.4196 73,-70 66.7026,-75.4464 59.6553,-81.0388 53.0058,-86.1105"></path><polygon fill="black" stroke="black" points="50.7801,-83.4047 44.882,-92.206 54.9814,-89.0038 50.7801,-83.4047"></polygon><text text-anchor="middle" x="112" y="-58.3" font-family="Times,serif" font-size="14.00"> 0.1941 </text></g><!-- C&#45;&gt;C --><g id="edge7" class="edge"><title>C-&gt;C</title>
+<path fill="none" stroke="black" d="M149.532,-26.1211C160.508,-26.8945 170,-24.1875 170,-18 170,-13.8428 165.715,-11.2567 159.574,-10.2417"></path><polygon fill="black" stroke="black" points="159.652,-6.74237 149.532,-9.87891 159.4,-13.7378 159.652,-6.74237"></polygon><text text-anchor="middle" x="193" y="-14.3" font-family="Times,serif" font-size="14.00"> 0.3257 </text></g></g></svg>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Filtering">Filtering<a class="anchor-link" href="#Filtering">¶</a>
+</h3>
+<p>Filtering is easily accomplished with a pandas dataframe.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">transition_matrix</span><span class="o">.</span><span class="n">as_dataframe</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="n">df</span> <span class="o">&gt;</span> <span class="mf">0.2</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>A</th>
+      <th>B</th>
+      <th>C</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>A</th>
+      <td>NaN</td>
+      <td>0.221311</td>
+      <td>NaN</td>
+    </tr>
+<tr>
+<th>B</th>
+      <td>0.497585</td>
+      <td>0.487705</td>
+      <td>0.480263</td>
+    </tr>
+<tr>
+<th>C</th>
+      <td>0.304348</td>
+      <td>0.290984</td>
+      <td>0.325658</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>You can see that we filtered on a probability of 0.2 creating a NaN probability between C and A.</p>
+
+</div>
+</div>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/data-science/" rel="tag">data science</a></li>
+            <li><a class="tag p-category" href="../../categories/markov/" rel="tag">markov</a></li>
+            <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../nikola-jupyter-notebook-publishing/" rel="prev" title="Nikola Jupyter Notebook Publishing">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../anomaly-detection-matrix-profile-discords/" rel="next" title="Anomaly Detection: Matrix Profile Discords">Next post</a>
+            </li>
+        </ul></nav></aside><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha384-3lJUsx1TJHt7BA4udB5KPnDrlkO8T6J6v/op7ui0BbCjvZ9WqV4Xm6DTP6kQ/iBH" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
+        </script></article>
+</div>
+<!--End of body content-->
+</div>
+<div class="footerbox">
+  Contents © 2020 Tyler Marrs
+  
+</div>
+
+            <script src="../../assets/js/all-nocdn.js"></script><!-- Add Jumbotron scroll js --><script type="text/javascript">//<![CDATA[
+$(window).load(function(){
+  $(window).scroll(function() {
+    var scrolledY = $(window).scrollTop();
+    $('.jumbotron').css('background-position', 'left ' + ((scrolledY)) + 'px');
+  });
+});//]]>
+</script><!-- fancy dates --><script>
+moment.locale("en");
+fancydates(0, "YYYY-MM-DD");
+</script><!-- end fancy dates --><script>
+baguetteBox.run('div#content', {
+    ignoreClass: 'islink',
+    captions: function(element) {
+        return element.getElementsByTagName('img')[0].alt;
+}});
+</script><!-- Abstract hide/show
+<script src"/assets/js/div_toggle.js"></script>
+--><script type="text/javascript">
+function toggle(showHideDiv, switchTextDiv) {
+    var ele = document.getElementById(showHideDiv);
+    var text = document.getElementById(switchTextDiv);
+    if(ele.style.display == "none") {
+        ele.style.display = "block";
+        text.innerHTML = "[hide abstract]";
+    }
+    else {
+            ele.style.display = "none";
+            text.innerHTML = "[show abstract]";
+    }
+}
+</script>
+</body>
+</html>

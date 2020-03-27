@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about bioinformatics)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/bioinformatics.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Remove Empty Variants From VCF</title><link>http://tylermarrs.com/posts/remove-empty-variants-from-vcf/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+    I ran into an issue where I tried to use known SNPs from dbSNP that consisted of some empty alleles. If you are using GATK's base quality score recalibrator (BQSR), then it will complain about the VCF not being valid. There are a handful of Perl one-liners that are posted within forums, but they did not appear to work. Here is my solution.
+&lt;/p&gt;
+&lt;p&gt;
+    The script below takes a VCF as input (gzipped or not) and writes a new VCF. It simply checks for empty REF and ALT fields. When that criteria is met, these variant lines are skipped while writing out the new VCF.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="ch"&gt;#! /usr/bin/env python&lt;/span&gt;
+
+&lt;span class="c1"&gt;# This script removes empty alleles from a VCF. Some data sources such as&lt;/span&gt;
+&lt;span class="c1"&gt;# dbSNP provide improperly formatted VCFs. This causes headache when trying&lt;/span&gt;
+&lt;span class="c1"&gt;# to use strict tools such as the GATK.&lt;/span&gt;
+
+&lt;span class="c1"&gt;# It works by checking for empty string in the REF and ALT columns. When&lt;/span&gt;
+&lt;span class="c1"&gt;# one of these lines are crossed it skips writing it to the new VCF output.&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;argparse&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;gzip&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;    Parses the command line arguments.&lt;/span&gt;
+&lt;span class="sd"&gt;    """&lt;/span&gt;
+    &lt;span class="n"&gt;parser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;argparse&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ArgumentParser&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;description&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Strip empty alleles from VCF'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'input'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Input VCF - gzip accepted'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'output'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Output VCF'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;vcf_open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;    Obtain file handle if gzipped or normal text file.&lt;/span&gt;
+&lt;span class="sd"&gt;    """&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;endswith&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'.gz'&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;gzip&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'rt'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'r'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;read_and_write_vcfs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;input&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;    Reads in VCF and write out corrected VCF.&lt;/span&gt;
+&lt;span class="sd"&gt;    """&lt;/span&gt;
+    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;vcf_open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;input&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'w'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;startswith&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'#'&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                    &lt;span class="n"&gt;records&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strip&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="se"&gt;\t&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                    &lt;span class="n"&gt;ref&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;records&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                    &lt;span class="n"&gt;alt&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;records&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+                    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;is_empty&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ref&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="ow"&gt;or&lt;/span&gt; &lt;span class="n"&gt;is_empty&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;alt&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                        &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"skipping.... "&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                        &lt;span class="k"&gt;continue&lt;/span&gt;
+
+                &lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;args&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;read_and_write_vcfs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;'__main__'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>bioinformatics</category><category>vcf</category><guid>http://tylermarrs.com/posts/remove-empty-variants-from-vcf/</guid><pubDate>Mon, 26 Sep 2016 03:48:50 GMT</pubDate></item><item><title>Fix FASTq Headers</title><link>http://tylermarrs.com/posts/fix-fastq-headers/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+    I ran into a case in the lab where I received some odd FASTq headers. They were not standard by any means. The data consisted of paired end reads, but the headers did not contain the appropriate format for specifying which end it came from. Here is a script that I wrote to fix the issue. This may be useful to you as well, but be wary that I hard coded a hardware identifier of the sequencer within the header identification logic. This script also assumes that "read1" and "read2" is within the file name. It uses the filename to determine which end the FASTA came from.
+&lt;/p&gt;
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="ch"&gt;#! /usr/bin/env python&lt;/span&gt;
+
+&lt;span class="c1"&gt;# Some of the FASTQ files have some odd format. So this script fixes the header&lt;/span&gt;
+&lt;span class="c1"&gt;# to where it matches paired reads properly. BWA complains that they are &lt;/span&gt;
+&lt;span class="c1"&gt;# different.&lt;/span&gt;
+&lt;span class="c1"&gt;#&lt;/span&gt;
+&lt;span class="c1"&gt;# The read counts are also the same in each FASTQ.&lt;/span&gt;
+&lt;span class="c1"&gt;# -------&lt;/span&gt;
+&lt;span class="c1"&gt;# Example&lt;/span&gt;
+&lt;span class="c1"&gt;# -------&lt;/span&gt;
+&lt;span class="c1"&gt;# Read 1&lt;/span&gt;
+&lt;span class="c1"&gt;# @D3LH75P1:3:1101:1237:1997:0:1:1&lt;/span&gt;
+&lt;span class="c1"&gt;#&lt;/span&gt;
+&lt;span class="c1"&gt;# Becomes&lt;/span&gt;
+&lt;span class="c1"&gt;# @D3LH75P1:3:1101:1237:1997:0/1&lt;/span&gt;
+&lt;span class="c1"&gt;#&lt;/span&gt;
+&lt;span class="c1"&gt;# Read 2&lt;/span&gt;
+&lt;span class="c1"&gt;# @D3LH75P1:3:1101:1237:1997:0:2:1&lt;/span&gt;
+&lt;span class="c1"&gt;#&lt;/span&gt;
+&lt;span class="c1"&gt;# Becomes&lt;/span&gt;
+&lt;span class="c1"&gt;# @D3LH75P1:3:1101:1237:1997:0/2&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;argparse&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;gzip&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;    Parses the command line arguments.&lt;/span&gt;
+&lt;span class="sd"&gt;    """&lt;/span&gt;
+    &lt;span class="n"&gt;parser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;argparse&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ArgumentParser&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;description&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Fix fastq headers.'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'input'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Input FASTQ - gzip accepted'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'output'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Output FASTQ'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;open_file&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;    Obtain file handle if gzipped or normal text file.&lt;/span&gt;
+&lt;span class="sd"&gt;    """&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;endswith&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'.gz'&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;gzip&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'rt'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'r'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;is_read1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;file_path&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""&lt;/span&gt;
+&lt;span class="sd"&gt;    Infer read from file name. Our files have read1 or read2 explicitly.&lt;/span&gt;
+&lt;span class="sd"&gt;    """&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s2"&gt;"read1"&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;file_path&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;args&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;read1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;is_read1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;open_file&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"w"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;new_line&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt;
+
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;startswith&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"@D3LH75P1"&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                    &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strip&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;":"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                    &lt;span class="k"&gt;del&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;:]&lt;/span&gt;                   
+                    &lt;span class="n"&gt;new_line&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;":"&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+                    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;read1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                        &lt;span class="n"&gt;new_line&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;new_line&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;"/1"&lt;/span&gt;
+                    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                        &lt;span class="n"&gt;new_line&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;new_line&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;"/2"&lt;/span&gt;
+
+                    &lt;span class="n"&gt;new_line&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;new_line&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt;
+
+                &lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;new_line&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s2"&gt;"__main__"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>bioinformatics</category><category>fastq</category><guid>http://tylermarrs.com/posts/fix-fastq-headers/</guid><pubDate>Mon, 26 Sep 2016 03:42:49 GMT</pubDate></item><item><title>Paper - Dimension reduction techniques for the integrative analysis of multi-omics data</title><link>http://tylermarrs.com/posts/paper-dimension-reduction-techniques-for-the-integrative-analysis-of-multi-omics-data/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+    This is a great paper that introduces some techniques to analyze multiple "omics" data sets. With my interest in integrative "omics" data analysis, I thought it would be important to store this for myself. The paper discusses current techniques and challenges in reducing the number of data dimensions.
+&lt;/p&gt;
+&lt;p&gt;
+    &lt;a href="http://bib.oxfordjournals.org/content/17/4/628.full.pdf+html" target="_blank"&gt;Dimension reduction techniques for the integrative analysis of multi-omics data&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    Abstract
+&lt;/p&gt;
+
+&lt;blockquote cite="http://bib.oxfordjournals.org/content/17/4/628.full.pdf+html"&gt;
+    &lt;p&gt;
+        State-of-the-art next-generation sequencing, transcriptomics, proteomics and other high-throughput ‘omics' technologies enable the efficient generation of large experimental data sets. These data may yield unprecedented knowledge about molecular pathways in cells and their role in disease. Dimension reduction approaches have been widely used in exploratory analysis of single omics data sets. This review will focus on dimension reduction approaches for simultaneous exploratory analyses of multiple data sets. These methods extract the linear relationships that best explain the correlated structure across data sets, the variability both within and between variables (or observations) and may highlight data issues such as batch effects or outliers. We explore dimension reduction techniques as one of the emerging approaches for data integration, and how these can be applied to increase our understanding of biological systems in normal physiological function and disease.
+    &lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+     
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>bioinformatics</category><category>data analysis</category><category>paper</category><category>statistics</category><guid>http://tylermarrs.com/posts/paper-dimension-reduction-techniques-for-the-integrative-analysis-of-multi-omics-data/</guid><pubDate>Thu, 28 Jul 2016 12:34:34 GMT</pubDate></item><item><title>Convert 23 and Me Raw Data to VCF</title><link>http://tylermarrs.com/posts/convert-23-and-me-raw-data-to-vcf/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p style="text-align: center;"&gt;
+    &lt;img alt="DNA-Double-Helix-Ladder-300x299" class="size-full wp-image-70 aligncenter" height="179" src="http://tylermarrs.com/wp-content/uploads/2016/07/DNA-Double-Helix-Ladder-300x299.jpg" style="" title="" width="180"&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    Have you ever wanted to perform analysis on your 23 and Me data? Well the first step to do this consists of converting the raw output that they provide into a widely used format; in this case VCF. The VCF format enables you to use several tools to annotate each SNP with various meta information. You can use tools such as snpEff or even impute your data using the Sanger imputation server. I created an online web service that converts your raw 23 and Me data into the VCF format. It automatically detects the appropriate reference genome for you. There is also no issues with missing SNPs during the conversion process as the same reference genomes that 23 and Me use are used.
+&lt;/p&gt;
+
+&lt;p&gt;
+    To get started, visit this page to convert your data: &lt;a href="http://23converter.tylermarrs.com" target="_blank"&gt;23converter.tylermarrs.com&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>23 and me</category><category>bioinformatics</category><category>vcf</category><guid>http://tylermarrs.com/posts/convert-23-and-me-raw-data-to-vcf/</guid><pubDate>Mon, 04 Jul 2016 18:25:55 GMT</pubDate></item></channel></rss>

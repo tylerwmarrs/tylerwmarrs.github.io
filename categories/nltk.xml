@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about nltk)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/nltk.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Edit Distance Hierarchical Clustering</title><link>http://tylermarrs.com/posts/edit-distance-hierarchical-clustering/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+    This is a quick blog post to illustrate how you can use Scipy, NLTK and Numpy to perform hierarchical clustering based on edit distance. Performing hierarchical clustering based on edit distance allows you to see what words or set of text is similar based on edit distance. Edit distance is the number of changes required to make text x turn into text y. Essentially, you could quickly look at a number of labels to check for typos or duplications.
+&lt;/p&gt;
+&lt;p&gt;
+    Here is a code snippet illustrating how you can cluster some labels and create a dendrogram of the relationships.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;maplotlib.pyplot&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;plt&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;nltk.metrics.distance&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;edit_distance&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;scipy.cluster.hierarchy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;linkage&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;scipy.cluster.hierarchy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;dendrogram&lt;/span&gt;
+
+&lt;span class="n"&gt;labels&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="s1"&gt;'Tacos'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Tacoes'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Tomatos'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Tomatoes'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Beef'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Beer'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Steak'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Pig'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;'Twig'&lt;/span&gt;
+&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;d&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;coord&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;j&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;coord&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;edit_distance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+&lt;span class="n"&gt;coords&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;triu_indices&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;apply_along_axis&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;coords&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;clust&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;linkage&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;dend&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dendrogram&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;clust&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;leaf_font_size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;p&gt;
+    The dendrogram from this set of data looks like this:
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-243 aligncenter" height="251" src="http://tylermarrs.com/wp-content/uploads/2017/03/edit_distance_dedrogram.png" style="" title="" width="375"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The x axis shows the labels of text and the y axis shows the edit distance. The words "Beer" and "Beef" are clustered together as only one change must be made to make the words similar. The words "Pig" and "Twig" require two changes.
+&lt;/p&gt;
+
+&lt;p&gt;
+    I thought that this was very useful in a scenario of data cleansing where there were many duplications of a given label. Automating the actual corrections of the text may depend on your use case, but visualizing these discrepencies up front can help you make a better decision.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>clustering</category><category>data analytics</category><category>edit distance</category><category>nltk</category><category>numpy</category><category>scipy</category><guid>http://tylermarrs.com/posts/edit-distance-hierarchical-clustering/</guid><pubDate>Wed, 15 Mar 2017 20:55:35 GMT</pubDate></item><item><title>Billboard Hot 100 Lyric Analysis</title><link>http://tylermarrs.com/posts/billboard-hot-100-lyric-analysis/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h2&gt;
+    Introduction
+&lt;/h2&gt;
+&lt;p&gt;
+    The Billboard Hot 100, from &lt;a href="http://billboard.com" target="_blank"&gt;billboard.com&lt;/a&gt;, is a list of rankings for the most popular 100 songs of a given week. The website claims to establish their rankings by "...fan interactions with music, including album sales and downloads, track downloads, radio airplay and touring as well as streaming and social interactions on Facebook, Twitter, Vevo, Youtube, Spotify and other popular online destinations for music." (billboard.com, 2017).
+&lt;/p&gt;
+
+&lt;p&gt;
+    In this analysis the goal is to see if any trends appear within the song's lyrics through text analysis. This project was created purely out of personal interest to see if any lyrical patterns exist between popular songs. All of the code and data used during this analysis can be viewed at the following &lt;a href="https://github.com/tylerwmarrs/billboard-hot-100-lyric-analysis" target="_blank"&gt;GitHub repository&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;u&gt;&lt;strong&gt;Please take caution while reading this blog post. Some offensive language is used for analysis purposes.&lt;/strong&gt;&lt;/u&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;
+    Methods
+&lt;/h2&gt;
+
+&lt;p&gt;
+    In this section we explore the methods and tools used to extract data from sources, clean the data and analyze the text.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Data Collection
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The first task at hand was to determine which data sources provided the song list and the lyrics. Thankfully, billboard.com provided an RSS feed that could easily be parsed to process the top 100 songs for a given week while obtaining the lyrics was much more difficult. To parse the RSS feed, I used the Python programming language and the software libraries: &lt;a href="https://pypi.python.org/pypi/lxml/3.7.2" target="_blank"&gt;LXML&lt;/a&gt; and &lt;a href="https://pypi.python.org/pypi/requests/2.13.0" target="_blank"&gt;Requests&lt;/a&gt;. LXML provides functionality to process DOM elements on web pages (HTML and XML). The Requests library enables you to create HTTP requests to obtain web content. 
+&lt;/p&gt;
+
+&lt;p&gt;
+    The billboard.com RSS feed was obtained by making a GET request with the Request's library and further parsed using LXML. For every song in the RSS feed, the artist, title, rank this week, rank last week was collected. During the iteration of each RSS entry, a request to a lyric site was made to obtain the lyrics (discussed below). Once processed, a comma-delimited file was created to save the song entries. A simple illustration of this process is shown below.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-172" height="252" src="http://tylermarrs.com/wp-content/uploads/2017/02/lyrics-collection-workflow-2.png" width="712"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    Searching for websites that provided lyrics was the longest process in this whole project. There are several lyrics websites available, however many of them are community driven and do not always have every song's lyrics at hand. That created a challenge in creating a good combination of many different web sources to obtain lyrics from. &lt;a href="http://azlyrics.com" target="_blank"&gt;AZLyrics.com&lt;/a&gt;, &lt;a href="http://songlyrics.com" target="_blank"&gt;SongLyrics.com&lt;/a&gt; and &lt;a href="http://lyricsfreak.com" target="_blank"&gt;LyricsFreak.com&lt;/a&gt; were all used to obtain lyrics. The process consisted of using the Requests and LXML libraries in the Python programming language. Essentially, the script would create a search request on each site until it found lyrics it was looking for. Once the lyrics were found it would extract them from the web page and save them to a text file. If one website did not have the lyrics, it would try the next one. If none of the sites contained the lyrics, it would raise an error. In the case of an error, manual web searching is required to obtain the lyrics. To create the file name for the lyrics file, I used the Python library &lt;a href="https://pypi.python.org/pypi/unicode-slugify/0.1.3" target="_blank"&gt;unicode-sluggify&lt;/a&gt;.This library "sluggifies" the provided text replacing spaces with dashes and other symbols accordingly. It is normally used in creating "pretty" URLs.
+&lt;/p&gt;
+
+&lt;p&gt;
+    In addition to the top songs and lyrics, I collected a set of swear words from &lt;a href="http://noswearing.com" target="_blank"&gt;noswearing.com&lt;/a&gt;. NoSwearing.com provides a list of swear words that are both common and uncommon. To extract these swear words I used the same libraries (Requests and LXML) to scrape data from the website. The website is laid out with all swear words separated alphabetically on their own web page. The script used to scrape the words iterated through the alphabet constructing the URL accordingly and fetched the swear words saving them to a text file.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Data Cleansing
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Preparation of the lyrics files consisted of removing unwanted text within the files. Many of the files contained labels in brackets to mark the chorus and other constructs of a song. These were removed from the files. Additionally, some lyrics files had a line that consisted of "Produced by..." which was removed. All data cleansing techniques used regular expressions in the Python programming language. Prior to this data cleansing step, raw data analysis was performed to determine what was causing "dirty results".
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Text Processing and Visualization
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The Python language and the following libraries were used to process and visualize the text: &lt;a href="http://www.nltk.org/" target="_blank"&gt;NLTK&lt;/a&gt;, &lt;a href="http://pandas.pydata.org/" target="_blank"&gt;Pandas&lt;/a&gt; and &lt;a href="http://matplotlib.org/" target="_blank"&gt;Matplotlib&lt;/a&gt;. NLTK is a natural language processing tool kit that provides convenience functions for common tasks such as tokenization and sentiment analysis. The Pandas library is a tool that provides common data analysis features. It enables you to easily perform aggregations, obtain descriptive statistics and plot data by wrapping convenience methods from other libraries. When Pandas didn't provide the exact plotting styles that I wanted out of the box, I used Matplotlib functionality to add styling to the plots.
+&lt;/p&gt;
+
+&lt;h2&gt;
+    Analysis
+&lt;/h2&gt;
+
+&lt;p&gt;
+    In this section you will find the different analyses performed on the lyrics.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Word Frequency
+&lt;/h3&gt;
+
+&lt;p&gt;
+    One of the first analyses performed was to determine the frequency of words throughout the lyrics. This process was performed by tokenizing each of the words with NLTK, removing the stop words, stemming words with PorterStemmer, collecting word frequencies per lyrics file and normalizing the word frequency. Normalization was performed by treating each set of lyrics individually and collecting the frequency that each word showed up in the lyrics file individually. Once a frequency was obtained for each set of lyrics, a global frequency was calculated by combining all local frequencies and dividng by 100 (the number of songs). This method essentially treats every lyrics file as a "bag of words instead of all lyrics text combined as a "bag of words".
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-159 aligncenter" height="268" src="http://tylermarrs.com/wp-content/uploads/2017/02/word_frequency_normalized.png" style="" title="" width="362"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The bar chart above shows some of the common words used throughout the songs. The Y-axis is the frequency in a decimal percentage while the X-axis displays the words. So the word "love" shows up 1.5% of the time in all of the songs. Looking at the word frequencies could give you a general idea that "love" is a fairly popular topic in this set of songs.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Swear Words
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The next analysis performed was to look at how frequent swear words occurred in the songs. The same process used to obtain the word frequency was used to calculate the swear word frequency with one additional step - filtering the words of interest. 
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-156 aligncenter" height="269" src="http://tylermarrs.com/wp-content/uploads/2017/02/swear_word_frequency_normalized_stemmed.png" style="" title="" width="362"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    As illustrated in the plot, there is a very low frequency of swear words found throughout these songs. The most frequent swear word has a frequency of 0.7%. I imagine this is due to the nature of how billboard.com collects their information to create their list or songs with many swear words just are not as popular. Speculation aside, this would require more analysis and data collection on this specific topic to reliably determine the case.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    N-Grams
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Similar to looking at common words in the songs, I looked for common N-Grams. An N-Gram is a contiguous set of text. In this case our N-Grams represent a number of words.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-148 aligncenter" height="383" src="http://tylermarrs.com/wp-content/uploads/2017/02/common_trigrams.png" style="" title="" width="353"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The plot above shows the top TriGrams with their frequency.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-147 aligncenter" height="317" src="http://tylermarrs.com/wp-content/uploads/2017/02/common_bigrams.png" style="" title="" width="353"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The plot above shows the top BiGrams with their frequency. You might notice that there isn't a big difference between looking at TriGrams versus BiGrams. The majority of the same results show as the top. 
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Sentiments
+&lt;/h3&gt;
+
+&lt;p&gt;
+    To gain insight into the general sentiment of these popular songs, the &lt;a href="https://github.com/cjhutto/vaderSentiment" target="_blank"&gt;Vader sentiment analysis algorithm&lt;/a&gt; was used. This algorithm is a rule-based algorithm that was trained with Twitter data. It provides a good solution to handling slang and emoticons that isn't always seen in most algorithms. Another approach, given that I collectd more data, would be to create my own sentiment analysis tool using a NaiveBayes model. However, for this particular problem I felt that Vader would suffice. This is primarily due to no known source of lyrics with labeled sentiments.
+&lt;/p&gt;
+
+&lt;p&gt;
+    I used the Vader algorithm on each individual line in a given lyrics file. The output of the algorithm is a probability score of neutrality, positivity and negativity. To obtain the sentiment for an entire song, each line was processed and the sum of each probability was gathered. Once all lines were processed, a normalized score was obtained by dividing by the total number of lines analyzed in the lyrics file. To obtain a global sentiment for all of the songs in the set, each song's sentimet scores were summed and divided by the total number of songs analyzed (100).
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-154 aligncenter" height="281" src="http://tylermarrs.com/wp-content/uploads/2017/02/sentiment_distribution.png" style="" title="" width="350"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    In this plot you can see that the songs are generally scored as neutral, however there is a 2-3% difference between positive and negative sentiments. I imagine that the sentiment analysis tool, Vader, is most likely not optimal for lyric analysis. Experimentation with other algorithms would need to be explored to determine if a better solution is available.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Repetitiveness
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Have you ever listened to a song that seemed as if it was saying the same thing over and over again? Typically these songs become "stuck in your head" so I wanted to measure how repetitive a given song is. A custom algorithm was used to measure repetitiveness. Essentially, all unique phrases (each individual line) was obtained for each lyric file and a frequency for each phrase was calculated. All unique phrases that had 2 or more repetitions was summed together and divided by the total number of phrases in the file. The result is a percentage of repetitive lines.
+&lt;/p&gt;
+
+&lt;p&gt;
+    A different approach for measuring repetitiveness would be at the word level. However, some songs use words in different phrases that may not sound repetitive. Either approach would work, however I felt that measuring at the phrase level made more sense. 
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-181 aligncenter" height="466" src="http://tylermarrs.com/wp-content/uploads/2017/02/repetitiveness.png" style="" title="" width="925"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The plot above shows the percentage of repetitions found in each song. The songs from left to right are ordered by the 1st rank for the week to the 100th rank. You can also see that generally a lot of these songs are pretty repetitive with a median of nearly 58%. Althougth these songs may seem very repetitive, more data would need to be analyzed to get a better median and mean repetition percentage. In other words, it is difficult to say that these songs are very repetitive when we do not know how repetitive most songs are.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Correlations
+&lt;/h3&gt;
+
+&lt;p&gt;
+    I looked for trends between sentiments, current rank and repetitiveness. However, no strong correlations were found. The Pearson correlation was used to identify any potential correlations. Pandas provides a simple way to obtain all correlations in a table format between all numerical values. For illustration, I included some scatter plots.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-188" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/Repetitiveness_and_neg_sent.png" style="" title="" width="273"&gt; &lt;img alt="" class="alignnone size-full wp-image-189" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/Repetitiveness_and_pos_sent.png" style="" title="" width="273"&gt; &lt;img alt="" class="alignnone size-full wp-image-190" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/pos_sent_current_rank.png" style="" title="" width="273"&gt; &lt;img alt="" class="alignnone size-full wp-image-191" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/neg_sent_current_rank.png" style="" title="" width="273"&gt; &lt;img alt="" class="alignnone size-full wp-image-192" height="195" src="http://tylermarrs.com/wp-content/uploads/2017/02/Repetitiveness_and_rank.png" style="" title="" width="272"&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;
+    Conclusion
+&lt;/h2&gt;
+
+&lt;p&gt;
+    While no correlations were found within the lyrics, many useful techniques and insights were gained in our analysis. We found that within our samples swearing is fairly limited with less than a 1% frequency, songs contain generally neutral sentiment with similar measures of positivity and negativity and that there appears to be a fairly high number of repititions in songs. 
+&lt;/p&gt;
+
+&lt;p&gt;
+    Some things to take note of is that all of these songs come from different genres and artists which makes finding trends more difficult. Also, it may not only be lyrics that make a song popular.
+&lt;/p&gt;
+
+&lt;p&gt;
+    Here is a list of further analysis topics that could be interesting:
+&lt;/p&gt;
+
+&lt;ul&gt;
+    &lt;li&gt;
+        Temporal analysis of Billboard Hot 100 songs across a year's period.
+    &lt;/li&gt;
+    &lt;li&gt;
+        All songs for a particular artist.
+    &lt;/li&gt;
+    &lt;li&gt;
+        Many songs from a particular genre.
+    &lt;/li&gt;
+    &lt;li&gt;
+        Many songs from multiple genres treated as separate cohorts.
+    &lt;/li&gt;
+    &lt;li&gt;
+        Improve sentiment analysis by training our own model. This would be very complicated with no labels.
+    &lt;/li&gt;
+    &lt;li&gt;
+        Combine a songs audio and lyrics to perform a similar analysis.
+    &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>data analytics</category><category>data mining</category><category>matplotlib</category><category>nlp</category><category>nltk</category><category>pandas</category><category>python</category><category>text analysis</category><guid>http://tylermarrs.com/posts/billboard-hot-100-lyric-analysis/</guid><pubDate>Fri, 17 Feb 2017 22:15:23 GMT</pubDate></item></channel></rss>

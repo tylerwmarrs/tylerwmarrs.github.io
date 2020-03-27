@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Yet another data scientist's blog.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tyler Marrs (old posts, page 2) | Tyler Marrs</title>
+<link href="assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="rss.xml">
+<link rel="canonical" href="http://tylermarrs.com/index-2.html">
+<link rel="prev" href="index-3.html" type="text/html">
+<link rel="next" href="index-1.html" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-140537127-1"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-140537127-1');
+</script><link href="assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="assets/css/theme.css">
+<link rel="stylesheet" media="screen" href="http://openfontlibrary.org/face/railway-sans" type="text/css">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+</head>
+<body>
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse center" role="navigation"><div class="container">
+    <div align="center">
+      <img id="logo" src="images/me.jpg"><div id="blog-title">Tyler Marrs</div>
+      <div id="blog-description">Yet another data scientist's blog.</div>
+    </div>
+
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+    </div>
+    <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+<li>
+<a href="pages/about/">About</a>
+                </li>
+<li>
+<a href=".">Blog</a>
+                </li>
+<li>
+<a href="archive.html">Archive</a>
+                </li>
+<li>
+<a href="categories/">Tags</a>
+                </li>
+<li>
+<a href="pages/projects/">Projects</a>
+                </li>
+<li>
+<a href="rss.xml">RSS feed</a>
+
+        </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<!--Add Links to social media sites --><!-- pass -->
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+</nav><!-- End of Menubar --><div class="container">
+  <!--Body content-->
+  <div class="row">
+      
+      
+
+    
+
+
+    
+<div class="postindex">
+    <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/remove-empty-variants-from-vcf/" class="u-url">Remove Empty Variants From VCF</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Tyler Marrs
+            </span></p>
+            <p class="dateline">
+            <a href="posts/remove-empty-variants-from-vcf/" rel="bookmark">
+            <time class="published dt-published" datetime="2016-09-25T22:48:50-05:00" itemprop="datePublished" title="2016-09-25">2016-09-25</time></a>
+            </p>
+        </div>
+    </header><div class="e-content entry-content">
+    <div>
+<p></p>
+<p>
+    I ran into an issue where I tried to use known SNPs from dbSNP that consisted of some empty alleles. If you are using GATK's base quality score recalibrator (BQSR), then it will complain about the VCF not being valid. There are a handful of Perl one-liners that are posted within forums, but they did not appear to work. Here is my solution.
+</p>
+<p>
+    The script below takes a VCF as input (gzipped or not) and writes a new VCF. It simply checks for empty REF and ALT fields. When that criteria is met, these variant lines are skipped while writing out the new VCF.
+</p>
+
+<pre class="code literal-block"><span></span><code><span class="ch">#! /usr/bin/env python</span>
+
+<span class="c1"># This script removes empty alleles from a VCF. Some data sources such as</span>
+<span class="c1"># dbSNP provide improperly formatted VCFs. This causes headache when trying</span>
+<span class="c1"># to use strict tools such as the GATK.</span>
+
+<span class="c1"># It works by checking for empty string in the REF and ALT columns. When</span>
+<span class="c1"># one of these lines are crossed it skips writing it to the new VCF output.</span>
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+
+<span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
+    <span class="sd">"""</span>
+<span class="sd">    Parses the command line arguments.</span>
+<span class="sd">    """</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">'Strip empty alleles from VCF'</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'Input VCF - gzip accepted'</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'output'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'Output VCF'</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">vcf_open</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Obtain file handle if gzipped or normal text file.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.gz'</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'rt'</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">read_and_write_vcfs</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Reads in VCF and write out corrected VCF.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">vcf_open</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'#'</span><span class="p">):</span>
+                    <span class="n">records</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
+                    <span class="n">ref</span> <span class="o">=</span> <span class="n">records</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                    <span class="n">alt</span> <span class="o">=</span> <span class="n">records</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="n">is_empty</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_empty</span><span class="p">(</span><span class="n">alt</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">"skipping.... "</span> <span class="o">+</span> <span class="n">line</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">read_and_write_vcfs</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre>
+
+
+<p></p>
+</div>
+    </div>
+    </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/fix-fastq-headers/" class="u-url">Fix FASTq Headers</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Tyler Marrs
+            </span></p>
+            <p class="dateline">
+            <a href="posts/fix-fastq-headers/" rel="bookmark">
+            <time class="published dt-published" datetime="2016-09-25T22:42:49-05:00" itemprop="datePublished" title="2016-09-25">2016-09-25</time></a>
+            </p>
+        </div>
+    </header><div class="e-content entry-content">
+    <div>
+<p></p>
+<p>
+    I ran into a case in the lab where I received some odd FASTq headers. They were not standard by any means. The data consisted of paired end reads, but the headers did not contain the appropriate format for specifying which end it came from. Here is a script that I wrote to fix the issue. This may be useful to you as well, but be wary that I hard coded a hardware identifier of the sequencer within the header identification logic. This script also assumes that "read1" and "read2" is within the file name. It uses the filename to determine which end the FASTA came from.
+</p>
+<pre class="code literal-block"><span></span><code><span class="ch">#! /usr/bin/env python</span>
+
+<span class="c1"># Some of the FASTQ files have some odd format. So this script fixes the header</span>
+<span class="c1"># to where it matches paired reads properly. BWA complains that they are </span>
+<span class="c1"># different.</span>
+<span class="c1">#</span>
+<span class="c1"># The read counts are also the same in each FASTQ.</span>
+<span class="c1"># -------</span>
+<span class="c1"># Example</span>
+<span class="c1"># -------</span>
+<span class="c1"># Read 1</span>
+<span class="c1"># @D3LH75P1:3:1101:1237:1997:0:1:1</span>
+<span class="c1">#</span>
+<span class="c1"># Becomes</span>
+<span class="c1"># @D3LH75P1:3:1101:1237:1997:0/1</span>
+<span class="c1">#</span>
+<span class="c1"># Read 2</span>
+<span class="c1"># @D3LH75P1:3:1101:1237:1997:0:2:1</span>
+<span class="c1">#</span>
+<span class="c1"># Becomes</span>
+<span class="c1"># @D3LH75P1:3:1101:1237:1997:0/2</span>
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+
+<span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
+    <span class="sd">"""</span>
+<span class="sd">    Parses the command line arguments.</span>
+<span class="sd">    """</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">'Fix fastq headers.'</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'Input FASTQ - gzip accepted'</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'output'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'Output FASTQ'</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">open_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Obtain file handle if gzipped or normal text file.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.gz'</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'rt'</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">is_read1</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Infer read from file name. Our files have read1 or read2 explicitly.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="s2">"read1"</span> <span class="ow">in</span> <span class="n">file_path</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">read1</span> <span class="o">=</span> <span class="n">is_read1</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">open_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">new_line</span> <span class="o">=</span> <span class="n">line</span>
+
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"@D3LH75P1"</span><span class="p">):</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">)</span>
+                    <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>                   
+                    <span class="n">new_line</span> <span class="o">=</span> <span class="s2">":"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">read1</span><span class="p">:</span>
+                        <span class="n">new_line</span> <span class="o">=</span> <span class="n">new_line</span> <span class="o">+</span> <span class="s2">"/1"</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">new_line</span> <span class="o">=</span> <span class="n">new_line</span> <span class="o">+</span> <span class="s2">"/2"</span>
+
+                    <span class="n">new_line</span> <span class="o">=</span> <span class="n">new_line</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+
+                <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">new_line</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre>
+
+
+<p></p>
+</div>
+    </div>
+    </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/paper-dimension-reduction-techniques-for-the-integrative-analysis-of-multi-omics-data/" class="u-url">Paper - Dimension reduction techniques for the integrative analysis of multi-omics data</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Tyler Marrs
+            </span></p>
+            <p class="dateline">
+            <a href="posts/paper-dimension-reduction-techniques-for-the-integrative-analysis-of-multi-omics-data/" rel="bookmark">
+            <time class="published dt-published" datetime="2016-07-28T07:34:34-05:00" itemprop="datePublished" title="2016-07-28">2016-07-28</time></a>
+            </p>
+        </div>
+    </header><div class="e-content entry-content">
+    <div>
+<p></p>
+<p>
+    This is a great paper that introduces some techniques to analyze multiple "omics" data sets. With my interest in integrative "omics" data analysis, I thought it would be important to store this for myself. The paper discusses current techniques and challenges in reducing the number of data dimensions.
+</p>
+<p>
+    <a href="http://bib.oxfordjournals.org/content/17/4/628.full.pdf+html" target="_blank">Dimension reduction techniques for the integrative analysis of multi-omics data</a>
+</p>
+
+<p>
+    Abstract
+</p>
+
+<blockquote cite="http://bib.oxfordjournals.org/content/17/4/628.full.pdf+html">
+    <p>
+        State-of-the-art next-generation sequencing, transcriptomics, proteomics and other high-throughput ‘omics' technologies enable the efficient generation of large experimental data sets. These data may yield unprecedented knowledge about molecular pathways in cells and their role in disease. Dimension reduction approaches have been widely used in exploratory analysis of single omics data sets. This review will focus on dimension reduction approaches for simultaneous exploratory analyses of multiple data sets. These methods extract the linear relationships that best explain the correlated structure across data sets, the variability both within and between variables (or observations) and may highlight data issues such as batch effects or outliers. We explore dimension reduction techniques as one of the emerging approaches for data integration, and how these can be applied to increase our understanding of biological systems in normal physiological function and disease.
+    </p>
+</blockquote>
+
+<p>
+     
+</p>
+
+<p></p>
+</div>
+    </div>
+    </article>
+</div>
+
+        <nav class="postindexpager"><ul class="pager">
+<li class="previous">
+                <a href="index-3.html" rel="prev">Newer posts</a>
+            </li>
+            <li class="next">
+                <a href="index-1.html" rel="next">Older posts</a>
+            </li>
+        </ul></nav>
+</div>
+<!--End of body content-->
+</div>
+<div class="footerbox">
+  Contents © 2020 Tyler Marrs
+  
+</div>
+
+            <script src="assets/js/all-nocdn.js"></script><!-- Add Jumbotron scroll js --><script type="text/javascript">//<![CDATA[
+$(window).load(function(){
+  $(window).scroll(function() {
+    var scrolledY = $(window).scrollTop();
+    $('.jumbotron').css('background-position', 'left ' + ((scrolledY)) + 'px');
+  });
+});//]]>
+</script><!-- fancy dates --><script>
+moment.locale("en");
+fancydates(0, "YYYY-MM-DD");
+</script><!-- end fancy dates --><script>
+baguetteBox.run('div#content', {
+    ignoreClass: 'islink',
+    captions: function(element) {
+        return element.getElementsByTagName('img')[0].alt;
+}});
+</script><!-- Abstract hide/show
+<script src"/assets/js/div_toggle.js"></script>
+--><script type="text/javascript">
+function toggle(showHideDiv, switchTextDiv) {
+    var ele = document.getElementById(showHideDiv);
+    var text = document.getElementById(switchTextDiv);
+    if(ele.style.display == "none") {
+        ele.style.display = "block";
+        text.innerHTML = "[hide abstract]";
+    }
+    else {
+            ele.style.display = "none";
+            text.innerHTML = "[show abstract]";
+    }
+}
+</script>
+</body>
+</html>

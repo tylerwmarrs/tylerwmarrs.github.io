@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about 23 and me)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/23-and-me.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Convert 23 and Me Raw Data to VCF</title><link>http://tylermarrs.com/posts/convert-23-and-me-raw-data-to-vcf/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;p style="text-align: center;"&gt;
+    &lt;img alt="DNA-Double-Helix-Ladder-300x299" class="size-full wp-image-70 aligncenter" height="179" src="http://tylermarrs.com/wp-content/uploads/2016/07/DNA-Double-Helix-Ladder-300x299.jpg" style="" title="" width="180"&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    Have you ever wanted to perform analysis on your 23 and Me data? Well the first step to do this consists of converting the raw output that they provide into a widely used format; in this case VCF. The VCF format enables you to use several tools to annotate each SNP with various meta information. You can use tools such as snpEff or even impute your data using the Sanger imputation server. I created an online web service that converts your raw 23 and Me data into the VCF format. It automatically detects the appropriate reference genome for you. There is also no issues with missing SNPs during the conversion process as the same reference genomes that 23 and Me use are used.
+&lt;/p&gt;
+
+&lt;p&gt;
+    To get started, visit this page to convert your data: &lt;a href="http://23converter.tylermarrs.com" target="_blank"&gt;23converter.tylermarrs.com&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>23 and me</category><category>bioinformatics</category><category>vcf</category><guid>http://tylermarrs.com/posts/convert-23-and-me-raw-data-to-vcf/</guid><pubDate>Mon, 04 Jul 2016 18:25:55 GMT</pubDate></item></channel></rss>

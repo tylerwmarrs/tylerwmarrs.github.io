@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about median)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/median.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:00 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Quick Stats - Descriptive Statistics Part 2 - Median</title><link>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-2-median/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;
+    Introduction
+&lt;/h3&gt;
+&lt;p&gt;
+    In this next post on descriptive statistics, the median will be discussed. In &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-1-mean/" target="_blank"&gt;part 1 of this blog series we learned about the mean (average)&lt;/a&gt; and found out that it can easily be skewed by large or small values. Both the median and mean are "measures of central tendency". Central tendency is essentially the center position of a distribution for a data set. Now that you are refreshed, we can discuss the median.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Median
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The median is simple to calculate. First, we must arrange the values from least to greatest. Next, we pick the center value - this is our median when there is an odd number of values. When there are an even number of values we simply add the two center values together and divide by 2.
+&lt;/p&gt;
+
+&lt;p&gt;
+    Here are examples of both odd and even cases:
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;strong&gt;Odd number of values&lt;/strong&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;1, 2, 3, 4, 5
+Median = 3&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+    &lt;strong&gt;Even number of values&lt;/strong&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;1, 2, 3, 4
+Median = (2 + 3) / 2 = 2.5&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3&gt;
+    Median vs. Mean
+&lt;/h3&gt;
+
+&lt;p&gt;
+    As you can see the median is not influenced by outliers. It provides the central value that most of us tend to think of as the average (mean). You might ask when you would use one over the other. This question is difficult to answer without context. In some situations it may make more sense to use one or both. Let's look at some grades for 10 random students to see how the mean and median look.
+&lt;/p&gt;
+
+&lt;p&gt;
+    The raw values are as follows:
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;20, 20, 25, 27, 29, 37, 45, 55, 90, 100&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="size-full wp-image-114 aligncenter" height="299" src="http://tylermarrs.com/wp-content/uploads/2017/01/exam_grades_median_mean.png" style="" title="" width="598"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    In the plot, shown above, the blue line represents the mean - 44.8%. The green line represents the median - 33%. Clearly there is a difference between these two measures of central point.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    R
+&lt;/h3&gt;
+
+&lt;p&gt;
+    To calculate the median in R - simply use the built in function.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;grades&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;25&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;27&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;29&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;37&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;45&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;55&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;90&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;median_grade&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;lt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nf"&gt;median&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;grades&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Python
+&lt;/h3&gt;
+
+&lt;p&gt;
+    To calculate the median in Python we use Numpy. Import Numpy and use the median function.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;span class="n"&gt;grades&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;25&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;27&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;29&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;37&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;45&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;55&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;90&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;median_grade&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;median&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;grades&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Conclusion
+&lt;/h3&gt;
+
+&lt;p&gt;
+    In this post we discussed the median and how it differentiates from the mean. We also established that context is important when deciding to use one versus the other. The mean and median are important values used in statistics and our every day lives.
+&lt;/p&gt;
+
+&lt;p&gt;
+    The next article will discuss the mode - another useful descriptive statistic.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>descriptive-statistics</category><category>median</category><category>python</category><category>r</category><category>statistics</category><guid>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-2-median/</guid><pubDate>Wed, 25 Jan 2017 05:28:35 GMT</pubDate></item></channel></rss>

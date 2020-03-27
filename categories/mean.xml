@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tyler Marrs (Posts about mean)</title><link>http://tylermarrs.com/</link><description></description><atom:link href="http://tylermarrs.com/categories/mean.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020; Tyler Marrs</copyright><lastBuildDate>Fri, 27 Mar 2020 00:45:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Quick Stats - Descriptive Statistics Part 1 - Mean</title><link>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-1-mean/</link><dc:creator>Tyler Marrs</dc:creator><description>&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;h3&gt;
+    Introduction
+&lt;/h3&gt;
+&lt;p&gt;
+    Descriptive statistics is a meaningful part of statistics in which a value provides informative insight about a particular data set. Some examples of descriptive stastics include the values mean, median and mode. In this post I will provide some concepts of the mean and how to calculate this value using both R and Python. All of the examples in Python will make use of the library &lt;a href="https://www.scipy.org/" target="_blank"&gt;SciPy&lt;/a&gt; or &lt;a href="http://www.numpy.org/" target="_blank"&gt;Numpy&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    Mean
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The mean provides an average of the observed values. It can be useful to show a simple summary illustrating the average, however it can become very misleading. Keep in mind that the terms mean and average can be used interchangeably.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;br&gt;
+    Let's look at the following numbers:
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;code&gt;Set 1
+1, 2, 3, 4, 5, 6, 7
+
+Set 2
+1, 2, 3, 4, 5, 20, 100&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+    In set 1 the average is meaningful as it respresents a fair distribution of the values. However, in set 2 the average is right skewed due to the large numbers. In other words, the mean does not represent the majority of the observations. Imagine if these sets represented exam scores. This would mean that average for set 1 is 4% and average of set 2 is 21.67%. You should get the idea that only 2 students in set 2 performed well while the majority of the students performed very poorly. It is very important to know the underlying data and how the mean represents it.
+&lt;/p&gt;
+
+&lt;p style="text-align: center;"&gt;
+    &lt;img alt="" class="alignnone size-full wp-image-89" height="323" src="http://tylermarrs.com/wp-content/uploads/2017/01/set1.png" style="" title="" width="472"&gt;&lt;img alt="" class="alignnone size-full wp-image-90" height="323" src="http://tylermarrs.com/wp-content/uploads/2017/01/set2.png" style="" title="" width="472"&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    The two plots above provide a better illustration of how skewed the data becomes with larger values. The red line marks the average. Keep in mind that this can happen with very small values as well.
+&lt;/p&gt;
+
+&lt;h3&gt;
+    &lt;br&gt;
+    R
+&lt;/h3&gt;
+
+&lt;p&gt;
+    In R it is very easy to calculate the mean. Below, we create a variable to hold some values and simply use the built-in mean function.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;my_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nf"&gt;c&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="m"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="m"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nf"&gt;mean&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;my_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Python
+&lt;/h3&gt;
+
+&lt;p&gt;
+    Similarly Python makes it very easy to calculate the mean. Ensure that you have the Numpy package installed to follow this snippet.
+&lt;/p&gt;
+
+&lt;pre class="code literal-block"&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+
+&lt;span class="n"&gt;my_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;mean&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;my_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+&lt;h3&gt;
+    Conclusion
+&lt;/h3&gt;
+
+&lt;p&gt;
+    The mean is a very useful but sometimes misleading descriptive statistic. It is very common to hear about averages in our daily lives, but you should know that it may not always be a good representation of the data.
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;a href="http://tylermarrs.com/quick-stats-descriptive-statistics-part-2-median/" target="_blank"&gt;The next article will cover the median - another useful descriptive statistic that is not as fragile.&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     
+&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;&lt;/div&gt;</description><category>descriptive-statistics</category><category>mean</category><category>python</category><category>r</category><category>statistics</category><guid>http://tylermarrs.com/posts/quick-stats-descriptive-statistics-part-1-mean/</guid><pubDate>Mon, 16 Jan 2017 17:46:43 GMT</pubDate></item></channel></rss>
